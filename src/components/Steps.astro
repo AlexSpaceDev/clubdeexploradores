@@ -1,0 +1,136 @@
+---
+const steps = [
+  {
+    number: "1",
+    title: "Completa misiones",
+    description: "Realiza retos divertidos",
+    color: "#d1f5e0",
+    accent: "#22a55b",
+    icon: "✏️",
+  },
+  {
+    number: "2",
+    title: "Gana puntos",
+    description: "Suma estrellas con cada logro",
+    color: "#fef3c7",
+    accent: "#f59e0b",
+    icon: "⭐",
+  },
+  {
+    number: "3",
+    title: "Desbloquea personajes",
+    description: "Descubre nuevos amigos",
+    color: "#ede9fe",
+    accent: "#7c3aed",
+    icon: "🔓",
+  },
+  {
+    number: "4",
+    title: "¡Gran explorador!",
+    description: "Completa tu colección",
+    color: "#fce7f3",
+    accent: "#db2777",
+    icon: "🏆",
+  },
+];
+---
+
+<div class="steps-wrapper">
+  <h2 class="steps-title">¿Cómo jugar?</h2>
+
+  <div class="steps-list">
+    {steps.map((step) => (
+      <div class="step-card" style={`--bg: ${step.color}; --accent: ${step.accent};`}>
+        <div class="step-number">{step.number}</div>
+        <div class="step-icon">{step.icon}</div>
+        <div class="step-text">
+          <span class="step-name">{step.title}</span>
+          <span class="step-desc">{step.description}</span>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
+<style>
+  .steps-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    width: 100%;
+  }
+
+  .steps-title {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #111827;
+    text-align: center;
+    margin-bottom: 0.25rem;
+    letter-spacing: -0.01em;
+  }
+
+  .steps-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .step-card {
+    background: var(--bg);
+    border-radius: 16px;
+    padding: 0.85rem 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    transition: transform 0.18s ease, box-shadow 0.18s ease;
+    cursor: default;
+  }
+
+  .step-card:hover {
+    transform: translateX(5px);
+    box-shadow: -4px 4px 0px var(--accent);
+  }
+
+  .step-number {
+    background: var(--accent);
+    color: #fff;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 900;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .step-icon {
+    font-size: 1.6rem;
+    flex-shrink: 0;
+    line-height: 1;
+  }
+
+  .step-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .step-name {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #111827;
+    line-height: 1.2;
+  }
+
+  .step-desc {
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #6b7280;
+  }
+</style>
