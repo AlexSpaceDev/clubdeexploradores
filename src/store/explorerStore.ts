@@ -17,6 +17,7 @@ interface ExplorerStore {
   initAnimals: (ids: string[]) => void;
   unlockAnimal: (id: string, cost: number) => void;
   setUnlocked: (id: string) => void;
+  resetAll: () => void;  
 }
 
 export const useExplorerStore = create<ExplorerStore>()(
@@ -30,7 +31,6 @@ export const useExplorerStore = create<ExplorerStore>()(
 
       initAnimals: (ids) => {
         const current = get().animals;
-        // Solo inicializa animales que aún no existen en el store
         const newAnimals = ids
           .filter((id) => !current.find((a) => a.id === id))
           .map((id) => ({ id, status: 'locked' as AnimalStatus }));
@@ -58,9 +58,15 @@ export const useExplorerStore = create<ExplorerStore>()(
             a.id === id ? { ...a, status: 'unlocked' } : a
           ),
         })),
+
+      resetAll: () =>          
+        set(() => ({
+          points: 0,
+          animals: [],
+        })),
     }),
     {
-      name: 'explorer-store', // clave en localStorage
+      name: 'explorer-store',
     }
   )
 );

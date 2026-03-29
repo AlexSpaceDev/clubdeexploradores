@@ -1,5 +1,5 @@
-import { motion, AnimatePresence } from 'framer-motion';
-import { useEffect } from 'react';
+import { motion } from 'framer-motion';
+import { useEffect, useState } from 'react';
 import type { Animal } from '../data/animals';
 import type { AnimalStatus } from '../store/explorerStore';
 import { useExplorerStore } from '../store/explorerStore';
@@ -8,14 +8,16 @@ interface Props {
   animal: Animal;
   status: AnimalStatus;
   points: number;
+  isActive: boolean;
+  onClick: () => void;
 }
 
-export default function AnimalCard({ animal, status, points }: Props) {
+export default function AnimalCard({ animal, status, points, isActive, onClick }: Props) {
   const { unlockAnimal, setUnlocked } = useExplorerStore();
+  const [shake, setShake] = useState(false);
 
   const canUnlock = points >= animal.costo;
 
-  // Cuando termina la animación de desbloqueo, marcamos como unlocked
   useEffect(() => {
     if (status === 'unlocking') {
       const timer = setTimeout(() => {
@@ -26,42 +28,63 @@ export default function AnimalCard({ animal, status, points }: Props) {
   }, [status]);
 
   const handleClick = () => {
-    if (status === 'locked' && canUnlock) {
-      unlockAnimal(animal.id, animal.costo);
+    onClick(); // siempre activa el visor
+
+    if (status === 'locked') {
+      if (canUnlock) {
+        unlockAnimal(animal.id, animal.costo);
+      } else {
+        // Shake: no tiene puntos
+        setShake(true);
+        setTimeout(() => setShake(false), 600);
+      }
     }
+  };
+
+  const shakeVariants = {
+    idle: { x: 0 },
+    shaking: {
+      x: [0, -6, 6, -5, 5, -3, 3, 0],
+      transition: { duration: 0.5 },
+    },
   };
 
   return (
     <motion.div
       layout
-      className="animal-card-wrapper"
-      style={{ '--accent': animal.accentColor, '--bg': animal.color } as React.CSSProperties}
+      className={`animal-card-wrapper ${isActive ? 'active-card' : ''}`}
+      animate={shake ? 'shaking' : 'idle'}
+      variants={shakeVariants}
+      onClick={handleClick}
+      style={{ cursor: 'pointer' }}
     >
       {/* ── LOCKED ── */}
       {status === 'locked' && (
         <motion.div
           className={`animal-card locked ${canUnlock ? 'can-unlock' : ''}`}
-          onClick={handleClick}
-          whileHover={canUnlock ? { scale: 1.03 } : {}}
-          whileTap={canUnlock ? { scale: 0.97 } : {}}
-          title={canUnlock ? 'Toca para desbloquear' : ''}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
         >
-          <div className="card-emoji blurred">
-            {animal.emoji}
-          </div>
+          <div className="card-emoji blurred">{animal.emoji}</div>
           <div className="lock-icon">🔒</div>
           <div className="card-cost">
             <span className="cost-label">
-              {canUnlock ? '¡Listo para desbloquear!' : `Faltan ${animal.costo - points} pts`}
+              {canUnlock ? '¡Toca para desbloquear!' : `${animal.costo} pts`}
             </span>
-            <span className="cost-badge" style={{ background: canUnlock ? '#22c55e' : '#e5e7eb', color: canUnlock ? '#fff' : '#6b7280' }}>
+            <span
+              className="cost-badge"
+              style={{
+                background: canUnlock ? '#22c55e' : '#e5e7eb',
+                color: canUnlock ? '#fff' : '#6b7280',
+              }}
+            >
               ⭐ {animal.costo} pts
             </span>
           </div>
         </motion.div>
       )}
 
-      {/* ── UNLOCKING (animación) ── */}
+      {/* ── UNLOCKING ── */}
       {status === 'unlocking' && (
         <motion.div
           className="animal-card unlocking"
@@ -99,13 +122,12 @@ export default function AnimalCard({ animal, status, points }: Props) {
           initial={{ opacity: 0, y: 20, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.5, ease: 'easeOut' }}
+          whileHover={{ scale: 1.02 }}
         >
-          {/* Imagen placeholder */}
           <div className="animal-image-placeholder">
             <span className="card-emoji">{animal.emoji}</span>
             <span className="placeholder-label">Foto próximamente</span>
           </div>
-
           <div className="card-info">
             <div className="card-header">
               <h3 className="animal-name">{animal.nombre}</h3>
@@ -113,26 +135,7 @@ export default function AnimalCard({ animal, status, points }: Props) {
                 {animal.descripcionCorta}
               </span>
             </div>
-
             <p className="animal-desc">{animal.descripcion}</p>
-
-            <div className="animal-stats">
-              <div className="stat">
-                <span className="stat-icon">⚖️</span>
-                <span className="stat-value">{animal.stats.peso}</span>
-                <span className="stat-label">peso</span>
-              </div>
-              <div className="stat">
-                <span className="stat-icon">📏</span>
-                <span className="stat-value">{animal.stats.longitud}</span>
-                <span className="stat-label">longitud</span>
-              </div>
-              <div className="stat">
-                <span className="stat-icon">🌿</span>
-                <span className="stat-value">{animal.stats.habitat}</span>
-                <span className="stat-label">hábitat</span>
-              </div>
-            </div>
           </div>
         </motion.div>
       )}
