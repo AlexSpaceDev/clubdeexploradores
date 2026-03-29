@@ -1,0 +1,479 @@
+---
+import AnimalGrid from './AnimalGrid';
+---
+
+<section class="animales-section">
+  <div class="animales-inner">
+
+    <div class="section-label">SECCIÓN 1</div>
+    <h2 class="section-title">Animales descubiertos</h2>
+    <p class="section-subtitle">
+      Acumula puntos en las misiones y desbloquea a cada explorador animal. ¡Toca una tarjeta para verla en el visor!
+    </p>
+
+    <AnimalGrid client:load />
+
+  </div>
+</section>
+
+<style>
+  .animales-section {
+    background: #f0faf4;
+    padding: 5rem 1.5rem;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .animales-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: #22a55b;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-title {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 900;
+    color: #111827;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.02em;
+  }
+
+  .section-subtitle {
+    font-size: 1rem;
+    color: #6b7280;
+    max-width: 560px;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+  }
+
+  /* ── WRAPPER GENERAL ── */
+  :global(.animal-grid-wrapper) {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* ── HEADER ── */
+  :global(.grid-header) {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+
+  :global(.points-badge) {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: #fef3c7;
+    color: #92400e;
+    font-weight: 800;
+    font-size: 0.95rem;
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+  }
+
+  :global(.unlocked-badge) {
+    background: #d1fae5;
+    color: #065f46;
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 0.4rem 1rem;
+    border-radius: 999px;
+  }
+
+  :global(.test-buttons) {
+    display: flex;
+    gap: 0.5rem;
+    margin-left: auto;
+  }
+
+  :global(.test-btn) {
+    background: #f3f4f6;
+    border: 2px dashed #d1d5db;
+    color: #6b7280;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.8rem;
+    padding: 0.35rem 0.85rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+
+  :global(.test-btn:hover) { background: #e5e7eb; }
+
+  :global(.test-btn.reset) {
+    border-color: #fca5a5;
+    color: #ef4444;
+  }
+
+  :global(.test-btn.reset:hover) { background: #fee2e2; }
+
+  /* ── LAYOUT PRINCIPAL ── */
+  :global(.main-layout) {
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+
+  /* ── VISOR ── */
+  :global(.visor-card) {
+    background: #fff;
+    border-radius: 24px;
+    padding: 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    position: sticky;
+    top: 1.5rem;
+  }
+
+  :global(.visor-label) {
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #22a55b;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+  }
+
+  :global(.visor-image-area) {
+    border-radius: 16px;
+    height: 200px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    gap: 0.5rem;
+  }
+
+  :global(.locked-area) {
+    background: #e5e7eb;
+  }
+
+  :global(.visor-emoji) {
+    font-size: 5rem;
+    line-height: 1;
+  }
+
+  :global(.visor-emoji.blurred) {
+    filter: grayscale(1) blur(3px) opacity(0.3);
+  }
+
+  :global(.visor-lock) {
+    font-size: 2.5rem;
+    position: absolute;
+  }
+
+  :global(.visor-photo-label) {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #9ca3af;
+  }
+
+  :global(.visor-bottom-label) {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #6b7280;
+    background: #f3f4f6;
+    padding: 0.25rem 0.75rem;
+    border-radius: 999px;
+    width: fit-content;
+  }
+
+  :global(.visor-name) {
+    font-size: 1.5rem;
+    font-weight: 900;
+    color: #111827;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  :global(.visor-desc) {
+    font-size: 0.85rem;
+    color: #4b5563;
+    line-height: 1.6;
+    font-weight: 600;
+  }
+
+  :global(.visor-cost-row) {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  :global(.visor-cost-badge) {
+    background: #f3f4f6;
+    color: #374151;
+    font-size: 0.8rem;
+    font-weight: 800;
+    padding: 0.3rem 0.75rem;
+    border-radius: 8px;
+  }
+
+  :global(.visor-ready-badge) {
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 0.3rem 0.75rem;
+    border-radius: 8px;
+  }
+
+  :global(.visor-stats) {
+    display: flex;
+    gap: 0.5rem;
+  }
+
+  :global(.visor-stat) {
+    flex: 1;
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 0.6rem 0.4rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.15rem;
+    font-size: 0.75rem;
+    color: #6b7280;
+    font-weight: 600;
+  }
+
+  :global(.visor-stat strong) {
+    font-size: 0.85rem;
+    font-weight: 900;
+    color: #111827;
+  }
+
+  /* ── GRID DE TARJETAS ── */
+  :global(.cards-col) {
+    min-width: 0;
+  }
+
+  :global(.animals-grid) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.25rem;
+  }
+
+  /* ── TARJETA ── */
+  :global(.animal-card-wrapper) {
+    border-radius: 20px;
+  }
+
+  :global(.active-card) {
+    outline: 3px solid #22a55b;
+    outline-offset: 2px;
+    border-radius: 20px;
+  }
+
+  :global(.animal-card) {
+    border-radius: 20px;
+    padding: 1rem;
+    font-family: 'Nunito', sans-serif;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 180px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    text-align: center;
+  }
+
+  :global(.animal-card.locked) {
+    background: #f3f4f6;
+    border: 2px solid #e5e7eb;
+    justify-content: center;
+  }
+
+  :global(.animal-card.locked.can-unlock) {
+    border-color: #22c55e;
+    background: #f0fdf4;
+  }
+
+  :global(.card-emoji) {
+    font-size: 2.8rem;
+    line-height: 1;
+  }
+
+  :global(.blurred) {
+    filter: grayscale(1) blur(2px) opacity(0.35);
+  }
+
+  :global(.lock-icon) {
+    font-size: 1.5rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -70%);
+  }
+
+  :global(.card-cost) {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.25rem;
+  }
+
+  :global(.cost-label) {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #6b7280;
+  }
+
+  :global(.cost-badge) {
+    font-size: 0.78rem;
+    font-weight: 800;
+    padding: 0.25rem 0.7rem;
+    border-radius: 999px;
+  }
+
+  :global(.animal-card.unlocking) {
+    justify-content: center;
+    background: #e5e7eb;
+  }
+
+  :global(.unlocking-text) {
+    font-size: 0.9rem;
+    font-weight: 900;
+    color: #15803d;
+  }
+
+  :global(.animal-card.unlocked) {
+    justify-content: flex-start;
+    gap: 0.5rem;
+  }
+
+  :global(.animal-image-placeholder) {
+    background: rgba(255,255,255,0.5);
+    border-radius: 12px;
+    width: 100%;
+    height: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+  }
+
+  :global(.placeholder-label) {
+    font-size: 0.6rem;
+    font-weight: 600;
+    color: #9ca3af;
+  }
+
+  :global(.card-info) {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+  }
+
+  :global(.card-header) {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  :global(.animal-name) {
+    font-size: 0.9rem;
+    font-weight: 900;
+    color: #111827;
+  }
+
+  :global(.animal-tag) {
+    font-size: 0.6rem;
+    font-weight: 800;
+    color: #fff;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+  }
+
+  :global(.animal-desc) {
+    font-size: 0.72rem;
+    color: #374151;
+    line-height: 1.45;
+    font-weight: 600;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 1024px) {
+    :global(.main-layout) {
+      grid-template-columns: 1fr;
+    }
+
+    :global(.animals-grid) {
+        grid-template-columns: 1fr 1fr 1fr; /* en tablet: 3 columnas horizontales */
+    }
+
+    :global(.visor-card) {
+      position: static;
+      /* En mobile: layout horizontal dentro del visor */
+      flex-direction: row;
+      flex-wrap: wrap;
+      align-items: flex-start;
+    }
+
+    :global(.visor-image-area) {
+      width: 140px;
+      height: 140px;
+      flex-shrink: 0;
+    }
+
+    :global(.visor-locked),
+    :global(.visor-unlocked) {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      min-width: 160px;
+    }
+
+    :global(.visor-name) {
+      font-size: 1.2rem;
+    }
+
+    :global(.visor-label) {
+      width: 100%;
+    }
+  }
+
+  @media (max-width: 640px) {
+    :global(.visor-card) {
+      flex-direction: column;
+    }
+
+    :global(.visor-image-area) {
+      width: 100%;
+      height: 160px;
+    }
+
+    :global(.animals-grid) {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    :global(.test-buttons) {
+      margin-left: 0;
+      width: 100%;
+    }
+  }
+</style>
