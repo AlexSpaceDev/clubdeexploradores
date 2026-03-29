@@ -14,6 +14,13 @@ export default function AnimalGrid() {
     setReady(true);
   }, []);
 
+  // 👇 Este useEffect adicional re-inicializa tras un reset
+  useEffect(() => {
+    if (ready && animalStates.length === 0) {
+        initAnimals(animals.map((a) => a.id));
+    }
+  }, [animalStates.length, ready]);
+
   const unlockedCount = animalStates.filter((a) => a.status === 'unlocked').length;
   const activeAnimal = animals.find((a) => a.id === activeId)!;
   const activeState = animalStates.find((a) => a.id === activeId);

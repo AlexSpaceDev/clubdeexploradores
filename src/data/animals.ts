@@ -2,6 +2,7 @@ export interface Animal {
   id: string;
   nombre: string;
   emoji: string;
+  imagen?: string;
   costo: number;
   descripcion: string;
   descripcionCorta: string;
@@ -19,6 +20,7 @@ export const animals: Animal[] = [
     id: 'condor-andino',
     nombre: 'Cóndor Andino',
     emoji: '🦅',
+    imagen: '/images/condor-andino.jpg',
     costo: 20,
     descripcion: 'El rey de los cielos andinos. Con sus enormes alas planea sobre las montañas sin casi mover un músculo.',
     descripcionCorta: 'Sabio y valiente',

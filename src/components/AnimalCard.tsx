@@ -124,10 +124,30 @@ export default function AnimalCard({ animal, status, points, isActive, onClick }
           transition={{ duration: 0.5, ease: 'easeOut' }}
           whileHover={{ scale: 1.02 }}
         >
-          <div className="animal-image-placeholder">
-            <span className="card-emoji">{animal.emoji}</span>
-            <span className="placeholder-label">Foto próximamente</span>
-          </div>
+            <div className="animal-image-placeholder" style={{ position: 'relative', overflow: 'hidden' }}>
+            {animal.imagen && (
+                <img
+                src={animal.imagen}
+                alt={animal.nombre}
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    borderRadius: '12px',
+                    filter: 'brightness(0.72) saturate(0.85) blur(2px)', 
+                }}
+                />
+            )}
+            <span className="card-emoji" style={{ position: 'relative', zIndex: 1 }}>
+                {animal.emoji}
+            </span>
+            {!animal.imagen && (
+                <span className="placeholder-label">Foto próximamente</span>
+            )}
+            </div>
           <div className="card-info">
             <div className="card-header">
               <h3 className="animal-name">{animal.nombre}</h3>
