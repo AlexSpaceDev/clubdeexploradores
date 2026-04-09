@@ -1,0 +1,110 @@
+---
+import MisionesGrid from './MisionesGrid';
+---
+
+<section class="misiones-section">
+  <div class="misiones-inner">
+
+    <div class="section-label">SECCIÓN 2</div>
+    <h2 class="section-title">Misión de la semana</h2>
+    <p class="section-subtitle">
+      Esta sección recompensa al pequeño explorador. Cada actividad completada suma puntos para desbloquear personajes en la colección.
+    </p>
+
+    <MisionesGrid client:load />
+
+  </div>
+</section>
+
+<style>
+  .misiones-section {
+    background: #ffffff;
+    padding: 5rem 1.5rem;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .misiones-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: #22a55b;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-title {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 900;
+    color: #111827;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.02em;
+  }
+
+  .section-subtitle {
+    font-size: 1rem;
+    color: #6b7280;
+    max-width: 560px;
+    line-height: 1.6;
+    margin-bottom: 2.5rem;
+  }
+
+  /* Layout de 2 columnas en desktop */
+  :global(.misiones-layout) {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  :global(.misiones-left) {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  :global(.misiones-right) {
+    min-width: 0;
+  }
+
+  /* Barra de progreso: desktop = derecha, mobile = izquierda */
+  :global(.progreso-mobile) {
+    display: none;
+    margin-top: 1.25rem;
+  }
+
+  :global(.progreso-desktop) {
+    display: block;
+  }
+
+  /* Tablet */
+  @media (max-width: 900px) {
+    :global(.misiones-layout) {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    :global(.progreso-mobile) {
+      display: block;
+    }
+
+    :global(.progreso-desktop) {
+      display: none;
+    }
+  }
+
+  /* Mobile */
+  @media (max-width: 640px) {
+    .misiones-section {
+      padding: 3.5rem 1rem;
+    }
+
+    :global(.misiones-layout) {
+      gap: 1.5rem;
+    }
+  }
+</style>

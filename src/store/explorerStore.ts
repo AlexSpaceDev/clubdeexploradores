@@ -11,12 +11,17 @@ export interface AnimalState {
 interface ExplorerStore {
   points: number;
   animals: AnimalState[];
+  misionesCompletadas: string[];   // ids de misiones completadas
 
-  // Acciones
+  // Acciones - animales
   addPoints: (amount: number) => void;
   initAnimals: (ids: string[]) => void;
   unlockAnimal: (id: string, cost: number) => void;
   setUnlocked: (id: string) => void;
+
+  // Acciones — misiones
+  completarMision: (id: string, puntos: number) => void;
+
   resetAll: () => void;  
 }
 
@@ -25,6 +30,7 @@ export const useExplorerStore = create<ExplorerStore>()(
     (set, get) => ({
       points: 0,
       animals: [],
+      misionesCompletadas: [],
 
       addPoints: (amount) =>
         set((state) => ({ points: state.points + amount })),
@@ -59,10 +65,22 @@ export const useExplorerStore = create<ExplorerStore>()(
           ),
         })),
 
+        
+      completarMision: (id, puntos) => {
+        const { misionesCompletadas } = get();
+        // Evitar completar dos veces
+        if (misionesCompletadas.includes(id)) return;
+        set((state) => ({
+          misionesCompletadas: [...state.misionesCompletadas, id],
+          points: state.points + puntos,
+        }));
+      },
+
       resetAll: () =>          
         set(() => ({
           points: 0,
           animals: [],
+          misionesCompletadas: [],
         })),
     }),
     {
