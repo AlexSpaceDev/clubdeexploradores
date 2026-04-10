@@ -149,67 +149,75 @@ export default function MisionCard({ mision, completada, onCompletar }: MisionCa
                 </div>
               ) : null}
 
-              <div style={{ display: 'flex', gap: '0.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                {/* Botón subir */}
-                <button
-                  onClick={() => inputRef.current?.click()}
-                  style={{
-                    background: '#22a55b',
-                    color: '#fff',
-                    border: 'none',
-                    borderRadius: '12px',
-                    padding: '0.55rem 1.1rem',
-                    fontFamily: "'Nunito', sans-serif",
-                    fontWeight: 800,
-                    fontSize: '0.85rem',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {imagenPreview ? '📷 Cambiar imagen' : '📷 Subir imagen'}
-                </button>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
 
-                {/* Botón confirmar — solo visible si hay imagen */}
-                {imagenPreview && (
+                {!imagenPreview ? (
+                  /* ── Estado 1: sin imagen — Subir es el protagonista ── */
                   <motion.button
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    onClick={handleCompletar}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={() => inputRef.current?.click()}
                     style={{
-                      background: '#dcfce7',
-                      color: '#166534',
-                      border: '2px solid #86efac',
-                      borderRadius: '12px',
-                      padding: '0.55rem 1.1rem',
+                      width: '100%',
+                      background: 'linear-gradient(135deg, #22a55b 0%, #16a34a 100%)',
+                      color: '#fff',
+                      border: 'none',
+                      borderRadius: '14px',
+                      padding: '0.85rem 1.25rem',
                       fontFamily: "'Nunito', sans-serif",
                       fontWeight: 900,
-                      fontSize: '0.85rem',
+                      fontSize: '1rem',
                       cursor: 'pointer',
+                      boxShadow: '0 4px 14px rgba(34,165,91,0.35)',
                     }}
                   >
-                    ✅ ¡Misión cumplida! +{mision.puntos} pts
+                    📷 Subir imagen
                   </motion.button>
+                ) : (
+                  /* ── Estado 2: con imagen — Completar es el protagonista ── */
+                  <>
+                    <motion.button
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      whileTap={{ scale: 0.97 }}
+                      onClick={handleCompletar}
+                      style={{
+                        width: '100%',
+                        background: 'linear-gradient(135deg, #22a55b 0%, #16a34a 100%)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '14px',
+                        padding: '0.85rem 1.25rem',
+                        fontFamily: "'Nunito', sans-serif",
+                        fontWeight: 900,
+                        fontSize: '1rem',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 14px rgba(34,165,91,0.35)',
+                      }}
+                    >
+                      ✅ Completar misión +{mision.puntos} pts
+                    </motion.button>
+
+                    {/* Cambiar imagen: secundario y discreto */}
+                    <button
+                      onClick={() => inputRef.current?.click()}
+                      style={{
+                        width: '100%',
+                        background: 'transparent',
+                        color: '#9ca3af',
+                        border: '2px dashed #e5e7eb',
+                        borderRadius: '12px',
+                        padding: '0.5rem 1rem',
+                        fontFamily: "'Nunito', sans-serif",
+                        fontWeight: 700,
+                        fontSize: '0.82rem',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      📷 Cambiar imagen
+                    </button>
+                  </>
                 )}
 
-                {/* Sin imagen: botón de completar directo (fallback) */}
-                {!imagenPreview && (
-                  <button
-                    onClick={handleCompletar}
-                    style={{
-                      background: '#f3f4f6',
-                      color: '#9ca3af',
-                      border: '2px solid #e5e7eb',
-                      borderRadius: '12px',
-                      padding: '0.55rem 1.1rem',
-                      fontFamily: "'Nunito', sans-serif",
-                      fontWeight: 700,
-                      fontSize: '0.82rem',
-                      cursor: 'not-allowed',
-                    }}
-                    disabled
-                  >
-                    Sube una imagen para continuar
-                  </button>
-                )}
               </div>
 
               {/* Input oculto */}
@@ -217,7 +225,7 @@ export default function MisionCard({ mision, completada, onCompletar }: MisionCa
                 ref={inputRef}
                 type="file"
                 accept="image/*"
-                
+                capture="environment"
                 style={{ display: 'none' }}
                 onChange={handleFileChange}
               />
