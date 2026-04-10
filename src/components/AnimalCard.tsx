@@ -60,29 +60,46 @@ export default function AnimalCard({ animal, status, points, isActive, onClick }
     >
       {/* ── LOCKED ── */}
       {status === 'locked' && (
-        <motion.div
-          className={`animal-card locked ${canUnlock ? 'can-unlock' : ''}`}
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.97 }}
-        >
-          <div className="card-emoji blurred">{animal.emoji}</div>
-          <div className="lock-icon">🔒</div>
-          <div className="card-cost">
-            <span className="cost-label">
-              {canUnlock ? '¡Toca para desbloquear!' : `${animal.costo} pts`}
-            </span>
-            <span
-              className="cost-badge"
-              style={{
-                background: canUnlock ? '#22c55e' : '#e5e7eb',
-                color: canUnlock ? '#fff' : '#6b7280',
-              }}
-            >
-              ⭐ {animal.costo} pts
-            </span>
-          </div>
-        </motion.div>
+  <motion.div
+    className={`animal-card locked ${canUnlock ? 'can-unlock' : ''}`}
+    whileHover={{ scale: 1.02 }}
+    whileTap={{ scale: 0.97 }}
+  >
+    {/* Emoji + candado juntos, sin absolute */}
+    <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="card-emoji blurred">{animal.emoji}</div>
+      <span style={{
+        position: 'absolute',
+        bottom: '-6px',
+        right: '-6px',
+        fontSize: '1.6rem',
+        lineHeight: 1,
+      }}>🔒</span>
+    </div>
+
+    {/* Texto + badge debajo, con espacio limpio */}
+    <div className="card-cost" style={{ marginTop: '0.6rem' }}>
+      {canUnlock && (
+        <span className="cost-label">¡Toca para desbloquear!</span>
       )}
+      <span
+        className="cost-badge"
+        style={{
+          background: canUnlock ? '#22c55e' : '#e5e7eb',
+          color: canUnlock ? '#fff' : '#6b7280',
+          fontSize: '1rem',
+          padding: '0.5rem 1.1rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.35rem',
+        }}
+      >
+        <span style={{ fontSize: '1.2rem' }}>⭐</span>
+        {animal.costo} pts
+      </span>
+    </div>
+  </motion.div>
+)}
 
       {/* ── UNLOCKING ── */}
       {status === 'unlocking' && (
