@@ -1,0 +1,215 @@
+---
+---
+
+<section class="proximos-section">
+  <div class="proximos-inner">
+
+    <div class="section-label">SECCIÓN 3</div>
+    <h2 class="section-title">Próximos descubrimientos</h2>
+    <p class="section-subtitle">
+      Aquí se siembra expectativa. No hace falta tener el nuevo producto listo: basta con mostrar que hay más aventura por venir.
+    </p>
+
+    <div class="cards-grid">
+
+      <div class="prox-card">
+        <div class="card-emoji">🦔</div>
+        <div class="card-tag">Próximamente</div>
+        <h3 class="card-title">Animal secreto</h3>
+        <p class="card-desc">Muy pronto un nuevo personaje llegará al Club con una sorpresa especial.</p>
+      </div>
+
+      <div class="prox-card">
+        <div class="card-emoji">✳️</div>
+        <div class="card-tag">En camino</div>
+        <h3 class="card-title">Nueva aventura</h3>
+        <p class="card-desc">Más historias, más misiones y nuevos lugares para explorar en familia.</p>
+      </div>
+
+      <div class="prox-card">
+        <div class="card-emoji">🏆</div>
+        <div class="card-tag">Próximamente</div>
+        <h3 class="card-title">Meta especial</h3>
+        <p class="card-desc">Comparte tus retos para convertirte en un Explorador Maestro del Ecuador.</p>
+      </div>
+
+    </div>
+
+  </div>
+</section>
+
+<style>
+  .proximos-section {
+    background: #f8fafc;
+    padding: 5rem 1.5rem 6rem;
+    font-family: 'Nunito', sans-serif;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .proximos-section::before {
+    content: '';
+    position: absolute;
+    top: -80px;
+    right: -80px;
+    width: 360px;
+    height: 360px;
+    background: radial-gradient(circle, #d1fae5 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .proximos-section::after {
+    content: '';
+    position: absolute;
+    bottom: -60px;
+    left: -60px;
+    width: 280px;
+    height: 280px;
+    background: radial-gradient(circle, #e0f2fe 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .proximos-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    z-index: 1;
+  }
+
+  .section-label {
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    color: #22a55b;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .section-title {
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 900;
+    color: #111827;
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.02em;
+  }
+
+  .section-subtitle {
+    font-size: 1rem;
+    color: #6b7280;
+    max-width: 520px;
+    line-height: 1.6;
+    margin-bottom: 3rem;
+  }
+
+  .cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+
+  .prox-card {
+    background: #ffffff;
+    border: 2px solid #e5e7eb;
+    border-radius: 24px;
+    padding: 2rem 1.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.22s ease, box-shadow 0.22s ease,
+                border-color 0.22s ease, background 0.22s ease;
+    cursor: default;
+  }
+
+  /* Línea inferior — aparece en hover */
+  .prox-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #22a55b, #0ea5e9);
+    border-radius: 0 0 22px 22px;
+    opacity: 0;
+    transition: opacity 0.22s ease;
+  }
+
+  .prox-card:hover {
+    transform: translateY(-5px);
+    /* Box shadow verde como en el diseño de referencia */
+    box-shadow:
+      0 0 0 2px #22a55b,
+      0 12px 32px rgba(34, 165, 91, 0.2);
+    border-color: #22a55b;
+    /* Fondo verde muy suave — solo una tinta, sin capa encima */
+    background: #f0fdf4;
+  }
+
+  .prox-card:hover::after {
+    opacity: 1;
+  }
+
+  /* Texto oscurece en hover para mantener contraste sobre el fondo verde */
+  .prox-card:hover .card-title {
+    color: #064e28;
+  }
+
+  .prox-card:hover .card-desc {
+    color: #1f4a2e;
+  }
+
+  .prox-card:hover .card-tag {
+    background: #bbf7d0;
+    color: #065f46;
+  }
+
+  .card-emoji {
+    font-size: 2.25rem;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+
+  .card-tag {
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #6b7280;
+    background: #f3f4f6;
+    border-radius: 999px;
+    padding: 0.2rem 0.65rem;
+    width: fit-content;
+    transition: background 0.22s ease, color 0.22s ease;
+  }
+
+  .card-title {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: #111827;
+    letter-spacing: -0.02em;
+    margin: 0;
+    transition: color 0.22s ease;
+  }
+
+  .card-desc {
+    font-size: 0.88rem;
+    color: #374151;
+    line-height: 1.6;
+    font-weight: 600;
+    margin: 0;
+    transition: color 0.22s ease;
+  }
+
+  @media (max-width: 768px) {
+    .cards-grid {
+      grid-template-columns: 1fr;
+      gap: 1rem;
+    }
+
+    .proximos-section {
+      padding: 3.5rem 1rem 4.5rem;
+    }
+  }
+</style>
