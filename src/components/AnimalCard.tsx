@@ -161,9 +161,6 @@ export default function AnimalCard({ animal, status, points, isActive, onClick }
             <span className="card-emoji" style={{ position: 'relative', zIndex: 1 }}>
                 {animal.emoji}
             </span>
-            {!animal.imagen && (
-                <span className="placeholder-label">Foto próximamente</span>
-            )}
             </div>
           <div className="card-info">
             <div className="card-header">

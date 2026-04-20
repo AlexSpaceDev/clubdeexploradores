@@ -72,26 +72,20 @@ export default function AnimalVisor({ animal, status, points }: Props) {
           <span style={{ fontSize: '2.5rem', position: 'absolute' }}>🔒</span>
         )}
 
-        {status === 'unlocked' && (
-            animal.imagen ? (
-                <img
-                src={animal.imagen}
-                alt={animal.nombre}
-                style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    borderRadius: '16px',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                }}
-                />
-            ) : (
-                <span style={{ fontSize: '0.7rem', fontWeight: 600, color: '#9ca3af' }}>
-                Foto próximamente
-                </span>
-            )
+        {status === 'unlocked' && animal.imagen && (
+          <img
+            src={animal.imagen}
+            alt={animal.nombre}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover',
+              borderRadius: '16px',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+            }}
+          />
         )}
       </div>
 
