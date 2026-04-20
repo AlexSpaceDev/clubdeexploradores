@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { animals } from '../data/animals';
 import { useExplorerStore } from '../store/explorerStore';
+import { useDebugMode } from '../utils/useDebugMode';
 import AnimalCard from './AnimalCard';
 import AnimalVisor from './AnimalVisor';
 
 export default function AnimalGrid() {
   const { points, animals: animalStates, initAnimals, addPoints, resetAll } = useExplorerStore();
+  const debug = useDebugMode();
   const [activeId, setActiveId] = useState<string>(animals[0].id);
   const [ready, setReady] = useState(false);
 
@@ -40,14 +42,16 @@ export default function AnimalGrid() {
         <div className="unlocked-badge">
           🦎 {unlockedCount} de {animals.length} descubiertos
         </div>
-        <div className="test-buttons">
-          <button className="test-btn" onClick={() => addPoints(50)}>
-            + 50 pts
-          </button>
-          <button className="test-btn reset" onClick={resetAll}>
-            🔄 Reset
-          </button>
-        </div>
+        {debug && (
+          <div className="test-buttons">
+            <button className="test-btn" onClick={() => addPoints(50)}>
+              + 50 pts
+            </button>
+            <button className="test-btn reset" onClick={resetAll}>
+              🔄 Reset
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Layout principal */}

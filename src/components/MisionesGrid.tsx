@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { misiones } from '../data/missions';
 import { useExplorerStore } from '../store/explorerStore';
+import { useDebugMode } from '../utils/useDebugMode';
 import MisionCard from './MisionCard';
 
 // Pool ordenado — orden fijo para toda la app
@@ -19,6 +20,7 @@ export default function MisionesGrid() {
     avanzarSemanaDebug,
     resetMisiones,
   } = useExplorerStore();
+  const debug = useDebugMode();
 
   // Al montar y cada vez que semanaInicio se resetea a null (ej: tras resetMisiones)
   useEffect(() => {
@@ -84,20 +86,22 @@ export default function MisionesGrid() {
     <div style={{ fontFamily: "'Nunito', sans-serif" }}>
 
       {/* ── Barra debug ── */}
-      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
-        <button onClick={handleMasUna} disabled={debugDesactivado} style={debugBtn()}>
-          +1 misión completada
-        </button>
-        <button onClick={handleCompletarSemana} disabled={debugDesactivado} style={debugBtn()}>
-          Completar semana
-        </button>
-        <button onClick={handleSiguienteSemana} style={debugBtn(false, true)}>
-          ⏭ Siguiente semana
-        </button>
-        <button onClick={resetMisiones} style={debugBtn(true)}>
-          🔄 Reset misiones
-        </button>
-      </div>
+      {debug && (
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+          <button onClick={handleMasUna} disabled={debugDesactivado} style={debugBtn()}>
+            +1 misión completada
+          </button>
+          <button onClick={handleCompletarSemana} disabled={debugDesactivado} style={debugBtn()}>
+            Completar semana
+          </button>
+          <button onClick={handleSiguienteSemana} style={debugBtn(false, true)}>
+            ⏭ Siguiente semana
+          </button>
+          <button onClick={resetMisiones} style={debugBtn(true)}>
+            🔄 Reset misiones
+          </button>
+        </div>
+      )}
 
       {/* ── Layout principal ── */}
       <div className="misiones-layout">
