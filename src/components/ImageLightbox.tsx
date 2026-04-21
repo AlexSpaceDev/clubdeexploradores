@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { playSound } from '../lib/sounds';
 
 interface Props {
   images: string[];
@@ -83,7 +84,11 @@ export default function ImageLightbox({ images, alt, initialIndex = 0, onClose }
       {/* Botón cerrar */}
       <button
         className="lightbox-close"
-        onClick={(e) => { e.stopPropagation(); onCloseRef.current(); }}
+        onClick={(e) => {
+          e.stopPropagation();
+          playSound('press-button');
+          onCloseRef.current();
+        }}
         aria-label="Cerrar visor"
         type="button"
       >
@@ -101,7 +106,11 @@ export default function ImageLightbox({ images, alt, initialIndex = 0, onClose }
       {hasMultiple && (
         <button
           className="lightbox-arrow lightbox-arrow-left"
-          onClick={(e) => { e.stopPropagation(); prev(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            playSound('press-button');
+            prev();
+          }}
           aria-label="Imagen anterior"
           type="button"
         >
@@ -142,7 +151,11 @@ export default function ImageLightbox({ images, alt, initialIndex = 0, onClose }
       {hasMultiple && (
         <button
           className="lightbox-arrow lightbox-arrow-right"
-          onClick={(e) => { e.stopPropagation(); next(); }}
+          onClick={(e) => {
+            e.stopPropagation();
+            playSound('press-button');
+            next();
+          }}
           aria-label="Imagen siguiente"
           type="button"
         >
@@ -158,6 +171,7 @@ export default function ImageLightbox({ images, alt, initialIndex = 0, onClose }
               key={i}
               className={`lightbox-dot ${i === index ? 'active' : ''}`}
               onClick={() => {
+                if (i !== index) playSound('press-button');
                 setDirection(i > index ? 1 : -1);
                 setIndex(i);
               }}

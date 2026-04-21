@@ -26,19 +26,32 @@ const navItems = [
       </ul>
     </nav>
 
-    {/* Botón hamburguesa (mobile) */}
-    <button
-      class="header-burger"
-      type="button"
-      aria-label="Abrir menú"
-      aria-expanded="false"
-      aria-controls="mobile-sidebar"
-      data-burger
-    >
-      <span></span>
-      <span></span>
-      <span></span>
-    </button>
+    {/* Grupo derecho: mute + burger */}
+    <div class="header-actions">
+      <button
+        class="header-mute"
+        type="button"
+        aria-label="Silenciar sonidos"
+        aria-pressed="false"
+        data-mute
+      >
+        <span class="mute-icon" data-mute-icon aria-hidden="true">🔊</span>
+      </button>
+
+      {/* Botón hamburguesa (mobile) */}
+      <button
+        class="header-burger"
+        type="button"
+        aria-label="Abrir menú"
+        aria-expanded="false"
+        aria-controls="mobile-sidebar"
+        data-burger
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
   </div>
 
   {/* Sidebar mobile */}
@@ -88,6 +101,8 @@ const navItems = [
 </header>
 
 <script>
+  import { isMuted, toggleMuted, subscribeMuted, playSound } from '../lib/sounds';
+
   const header = document.querySelector<HTMLElement>('[data-header]');
   const burger = document.querySelector<HTMLButtonElement>('[data-burger]');
   const sidebar = document.querySelector<HTMLElement>('[data-sidebar]');
@@ -95,6 +110,40 @@ const navItems = [
   const closeBtn = document.querySelector<HTMLButtonElement>('[data-close]');
   const sidebarLinks = document.querySelectorAll<HTMLAnchorElement>('[data-sidebar-link]');
   const navLinks = document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]');
+  const muteBtn = document.querySelector<HTMLButtonElement>('[data-mute]');
+  const muteIcon = document.querySelector<HTMLElement>('[data-mute-icon]');
+
+  // ── Mute toggle ───────────────────────────────────────────────────────
+  function renderMute(muted: boolean) {
+    if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
+    if (muteBtn) {
+      muteBtn.setAttribute('aria-pressed', muted ? 'true' : 'false');
+      muteBtn.setAttribute(
+        'aria-label',
+        muted ? 'Activar sonidos' : 'Silenciar sonidos'
+      );
+      muteBtn.classList.toggle('is-muted', muted);
+    }
+  }
+
+  renderMute(isMuted());
+  subscribeMuted(renderMute);
+  muteBtn?.addEventListener('click', () => {
+    // Al silenciar: suena el press-button antes de muter.
+    // Al re-activar: no suena (el usuario acaba de pedir silencio previamente
+    // y no hace falta anunciar el retorno con audio).
+    if (!isMuted()) playSound('press-button');
+    toggleMuted();
+  });
+
+  // ── Sonido en controles de navegación ─────────────────────────────────
+  const logoLink = document.querySelector<HTMLAnchorElement>('.header-logo');
+  [...navLinks, ...sidebarLinks].forEach((a) =>
+    a.addEventListener('click', () => playSound('press-button'))
+  );
+  logoLink?.addEventListener('click', () => playSound('press-button'));
+  burger?.addEventListener('click', () => playSound('press-button'));
+  closeBtn?.addEventListener('click', () => playSound('press-button'));
 
   // ── Sidebar open/close ────────────────────────────────────────────────
   function openSidebar() {
@@ -265,6 +314,38 @@ const navItems = [
     border-radius: 50%;
     transform: translateX(-50%);
   }
+
+  /* ── ACCIONES (mute + burger) ─────────────────────────────────────────── */
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* ── MUTE ─────────────────────────────────────────────────────────────── */
+  .header-mute {
+    background: #f3f4f6;
+    border: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    line-height: 1;
+    transition: background 0.2s ease, transform 0.15s ease;
+    padding: 0;
+  }
+
+  .header-mute:hover { background: #e5e7eb; }
+  .header-mute:active { transform: scale(0.93); }
+
+  .header-mute.is-muted {
+    background: #fee2e2;
+  }
+  .header-mute.is-muted:hover { background: #fecaca; }
 
   /* ── BURGER ───────────────────────────────────────────────────────────── */
   .header-burger {

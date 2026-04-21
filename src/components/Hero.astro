@@ -20,8 +20,8 @@ import Steps from './Steps.astro';
       </p>
 
       <div class="hero-actions">
-        <a href="#animales" class="btn-primary">Descubre personajes</a>
-        <a href="#misiones" class="btn-secondary">Ver misiones</a>
+        <a href="#animales" class="btn-primary" data-cta>Descubre personajes</a>
+        <a href="#misiones" class="btn-secondary" data-cta>Ver misiones</a>
       </div>
     </div>
 
@@ -161,3 +161,11 @@ import Steps from './Steps.astro';
     }
   }
 </style>
+
+<script>
+  import { playSound } from '../lib/sounds';
+
+  document.querySelectorAll<HTMLAnchorElement>('[data-cta]').forEach((btn) => {
+    btn.addEventListener('click', () => playSound('press-button'));
+  });
+</script>

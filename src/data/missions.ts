@@ -14,6 +14,10 @@ export interface EtapaInfo {
   nombre: string;
   objetivo: string;
   mensajeFinal: string;
+  /** Mensaje celebratorio en el visor grande (columna izquierda) — logro personal. */
+  celebracionVisor: string;
+  /** Mensaje celebratorio en la sección de misiones (columna derecha) — qué se descubrió. */
+  celebracionMisiones: string;
 }
 
 export const etapas: EtapaInfo[] = [
@@ -22,18 +26,24 @@ export const etapas: EtapaInfo[] = [
     nombre: 'Explorador principiante',
     objetivo: 'Enganchar con misiones divertidas y rápidas.',
     mensajeFinal: '¡Increíble! ¡Has descubierto tu primer animal!',
+    celebracionVisor: '¡Te has convertido en un explorador principiante!',
+    celebracionMisiones: '¡Increíble! Has descubierto tu primer animal.',
   },
   {
     numero: 2,
     nombre: 'Explorador aventurero',
     objetivo: 'Decisiones, creatividad e historias propias.',
     mensajeFinal: '¡Dos nuevos amigos se unen a la colección!',
+    celebracionVisor: '¡Ya eres un explorador aventurero!',
+    celebracionMisiones: '¡Has descubierto dos animales más!',
   },
   {
     numero: 3,
     nombre: 'Guardián de los animales',
     objetivo: 'Emoción, aprendizaje y cierre fuerte.',
     mensajeFinal: '¡MISIÓN COMPLETADA! ¡Eres un verdadero guardián de los animales!',
+    celebracionVisor: '¡Te has convertido en un guardián de los animales!',
+    celebracionMisiones: '¡Has descubierto todos los animales del Ecuador!',
   },
 ];
 

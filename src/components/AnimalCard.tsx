@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import type { Animal } from '../data/animals';
 import type { AnimalStatus } from '../store/explorerStore';
 import { useExplorerStore } from '../store/explorerStore';
+import { playSound } from '../lib/sounds';
 
 interface Props {
   animal: Animal;
@@ -37,8 +38,10 @@ export default function AnimalCard({ animal, status, points, isActive, onClick }
     if (status === 'locked') {
       if (canUnlock) {
         unlockAnimal(animal.id, animal.costo);
+        playSound(esEspecial ? 'desbloqueo-especial' : 'desbloqueo-normal');
       } else {
         setShake(true);
+        playSound('lock');
         setTimeout(() => setShake(false), 600);
       }
     }

@@ -315,3 +315,11 @@ const navItems = [
     }
   }
 </style>
+
+<script>
+  import { playSound } from '../lib/sounds';
+
+  document.querySelectorAll<HTMLAnchorElement>('.site-footer a').forEach((a) => {
+    a.addEventListener('click', () => playSound('press-button'));
+  });
+</script>

@@ -3,11 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { etapas, misiones } from '../data/missions';
 import {
   calcularEtapaActual,
+  etapaPendienteDeCelebrar,
   misionesActivasParaEtapa,
   useExplorerStore,
 } from '../store/explorerStore';
 import { useDebugMode } from '../utils/useDebugMode';
 import MisionCard from './MisionCard';
+import { playSound } from '../lib/sounds';
 
 const TOTAL_ETAPAS = etapas.length;
 
@@ -15,7 +17,9 @@ export default function MisionesGrid() {
   const {
     points,
     misionesCompletadas,
+    etapasConfirmadas,
     completarMision,
+    confirmarEtapa,
     resetMisiones,
   } = useExplorerStore();
   const debug = useDebugMode();
@@ -43,6 +47,16 @@ export default function MisionesGrid() {
   const completadasTotales = misionesCompletadas.length;
   const totalMisiones = misiones.length;
 
+  // ── Celebración de etapa (pendiente de confirmar) ──
+  const etapaCelebracion = useMemo(
+    () => etapaPendienteDeCelebrar(misionesCompletadas, etapasConfirmadas),
+    [misionesCompletadas, etapasConfirmadas]
+  );
+  const celebracionInfo = etapaCelebracion !== null
+    ? etapas.find((e) => e.numero === etapaCelebracion) ?? null
+    : null;
+  const hayCelebracion = celebracionInfo !== null;
+
   // ── Toast ──
   const [toast, setToast] = useState<string | null>(null);
   const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -52,10 +66,21 @@ export default function MisionesGrid() {
     toastTimerRef.current = setTimeout(() => setToast(null), 2800);
   };
 
-  // ── Completar misión (con toast) ──
+  // ── Completar misión (con toast + sonido) ──
   const completarConToast = (id: string, puntos: number, mensaje: string) => {
+    // ¿Esta misión es la última pendiente de su etapa?
+    const esUltimaDeEtapa = misionesActivas.length === 1 && misionesActivas[0]?.id === id;
+
     completarMision(id, puntos);
-    mostrarToast(mensaje);
+
+    if (esUltimaDeEtapa) {
+      // La celebración grande se encarga del feedback; no doblamos con toast
+      // ni tocamos el sonido de misión completada.
+      playSound('etapa-completada');
+    } else {
+      mostrarToast(mensaje);
+      playSound('mision-completada');
+    }
   };
 
   // ── Debug helpers ──
@@ -129,8 +154,18 @@ export default function MisionesGrid() {
             </div>
           </div>
 
-          {/* Card destacada — tres estados */}
-          {todasCompletadas ? (
+          {/* Card destacada — prioridad: celebración > final > destacada */}
+          {hayCelebracion && celebracionInfo ? (
+            <HeroCard
+              label={`🎉 ETAPA ${celebracionInfo.numero} COMPLETADA`}
+              titulo={celebracionInfo.celebracionVisor}
+              descripcion={
+                celebracionInfo.numero < TOTAL_ETAPAS
+                  ? `Prepárate para la siguiente aventura: ${etapas[celebracionInfo.numero].nombre}.`
+                  : '¡Has llegado al final del viaje, explorador!'
+              }
+            />
+          ) : todasCompletadas ? (
             <HeroCard
               label="🏆 EXPLORADOR COMPLETO"
               titulo="¡Completaste todas las misiones!"
@@ -215,7 +250,10 @@ export default function MisionesGrid() {
                   <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
                     <motion.button
                       whileTap={{ scale: 0.97 }}
-                      onClick={() => inputDestacadaRef.current?.click()}
+                      onClick={() => {
+                        playSound('press-button');
+                        inputDestacadaRef.current?.click();
+                      }}
                       style={{
                         background: 'rgba(255,255,255,0.95)',
                         color: '#16a34a',
@@ -264,7 +302,10 @@ export default function MisionesGrid() {
                       ✅ Completar misión +{misionDestacada.puntos} pts
                     </motion.button>
                     <button
-                      onClick={() => inputDestacadaRef.current?.click()}
+                      onClick={() => {
+                        playSound('press-button');
+                        inputDestacadaRef.current?.click();
+                      }}
                       style={{
                         background: 'transparent',
                         color: 'rgba(255,255,255,0.75)',
@@ -300,23 +341,46 @@ export default function MisionesGrid() {
 
         {/* ── Columna derecha ── */}
         <div className="misiones-right">
-          <div style={{ fontWeight: 900, fontSize: '1.05rem', color: '#111827', marginBottom: '0.25rem' }}>
-            Etapa {etapaActual}: {etapaInfo.nombre}
-          </div>
-          <div style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 600, marginBottom: '1rem' }}>
-            {etapaInfo.objetivo}
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            {misionesDeEtapaActual.map((m) => (
-              <MisionCard
-                key={m.id}
-                mision={m}
-                completada={misionesCompletadas.includes(m.id)}
-                onCompletar={() => completarConToast(m.id, m.puntos, m.mensajeCompletado)}
+          <AnimatePresence mode="wait">
+            {hayCelebracion && celebracionInfo ? (
+              <CelebracionMisiones
+                key={`celebracion-${celebracionInfo.numero}`}
+                etapa={celebracionInfo.numero}
+                mensaje={celebracionInfo.celebracionMisiones}
+                esUltima={celebracionInfo.numero >= TOTAL_ETAPAS}
+                onContinuar={() => {
+                  playSound('press-button');
+                  confirmarEtapa(celebracionInfo.numero);
+                }}
               />
-            ))}
-          </div>
+            ) : (
+              <motion.div
+                key={`misiones-${etapaActual}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25 }}
+              >
+                <div style={{ fontWeight: 900, fontSize: '1.05rem', color: '#111827', marginBottom: '0.25rem' }}>
+                  Etapa {etapaActual}: {etapaInfo.nombre}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 600, marginBottom: '1rem' }}>
+                  {etapaInfo.objetivo}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  {misionesDeEtapaActual.map((m) => (
+                    <MisionCard
+                      key={m.id}
+                      mision={m}
+                      completada={misionesCompletadas.includes(m.id)}
+                      onCompletar={() => completarConToast(m.id, m.puntos, m.mensajeCompletado)}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="progreso-desktop" style={{ marginTop: '1.5rem' }}>
             <ProgresoBar completadas={completadasTotales} total={totalMisiones} etapa={etapaActual} nombreEtapa={etapaInfo.nombre} />
@@ -396,6 +460,90 @@ function debugBtn(isReset = false): React.CSSProperties {
     borderRadius: '8px',
     cursor: 'pointer',
   };
+}
+
+function CelebracionMisiones({
+  etapa,
+  mensaje,
+  esUltima,
+  onContinuar,
+}: {
+  etapa: number;
+  mensaje: string;
+  esUltima: boolean;
+  onContinuar: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.94, y: 10 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.96, y: -8 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      style={{
+        background: '#fff',
+        border: '3px solid #fde68a',
+        borderRadius: '24px',
+        padding: '2.25rem 1.5rem',
+        textAlign: 'center',
+        boxShadow: '0 10px 30px rgba(245, 158, 11, 0.15)',
+      }}
+    >
+      <motion.div
+        initial={{ scale: 0, rotate: -30 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ delay: 0.15, type: 'spring', stiffness: 200, damping: 14 }}
+        style={{ fontSize: '4rem', lineHeight: 1, marginBottom: '0.5rem' }}
+      >
+        🎉
+      </motion.div>
+
+      <div
+        style={{
+          fontSize: '0.72rem',
+          fontWeight: 900,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          color: '#b45309',
+          marginBottom: '0.75rem',
+        }}
+      >
+        Etapa {etapa} completada
+      </div>
+
+      <div
+        style={{
+          fontSize: 'clamp(1.15rem, 3.6vw, 1.45rem)',
+          fontWeight: 900,
+          lineHeight: 1.3,
+          color: '#111827',
+          marginBottom: '1.5rem',
+          padding: '0 0.5rem',
+        }}
+      >
+        {mensaje}
+      </div>
+
+      <motion.button
+        whileTap={{ scale: 0.96 }}
+        whileHover={{ scale: 1.03 }}
+        onClick={onContinuar}
+        style={{
+          background: 'linear-gradient(135deg, #22a55b 0%, #0ea5e9 100%)',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '999px',
+          padding: '0.85rem 2.25rem',
+          fontFamily: "'Nunito', sans-serif",
+          fontWeight: 900,
+          fontSize: '1rem',
+          cursor: 'pointer',
+          boxShadow: '0 8px 20px rgba(34, 165, 91, 0.3)',
+        }}
+      >
+        {esUltima ? '🏁 Ver final' : 'Continuar →'}
+      </motion.button>
+    </motion.div>
+  );
 }
 
 function ProgresoBar({ completadas, total, etapa, nombreEtapa }: { completadas: number; total: number; etapa: number; nombreEtapa: string }) {
