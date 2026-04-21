@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import ClickSparkles from '../components/ClickSparkles.astro';
 
 interface Props {
   title?: string;
@@ -83,5 +84,6 @@ const jsonLd = {
     <Header />
     <slot />
     <Footer />
+    <ClickSparkles />
   </body>
 </html>
