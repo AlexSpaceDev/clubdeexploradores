@@ -114,6 +114,37 @@ export default function MisionCard({ mision, completada, onCompletar }: MisionCa
               borderRadius: '14px',
               padding: '0.85rem 1rem',
             }}>
+              {/* Pasos de la misión */}
+              {mision.pasos && mision.pasos.length > 0 && (
+                <div style={{ marginBottom: '0.9rem' }}>
+                  <div style={{
+                    fontWeight: 800,
+                    fontSize: '0.8rem',
+                    color: '#111827',
+                    marginBottom: '0.4rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em',
+                  }}>
+                    Pasos de la misión
+                  </div>
+                  <ul style={{
+                    margin: 0,
+                    paddingLeft: '1.1rem',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.3rem',
+                    fontSize: '0.78rem',
+                    color: '#374151',
+                    fontWeight: 600,
+                    lineHeight: 1.5,
+                  }}>
+                    {mision.pasos.map((paso, i) => (
+                      <li key={i}>{paso}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               <div style={{
                 fontWeight: 800,
                 fontSize: '0.85rem',
@@ -129,7 +160,7 @@ export default function MisionCard({ mision, completada, onCompletar }: MisionCa
                 lineHeight: 1.5,
                 marginBottom: '0.75rem',
               }}>
-                Un adulto puede tomar una foto del dibujo, manualidad o reto realizado para validar la misión.
+                Un adulto puede tomar una foto del dibujo realizado para validar la misión.
               </div>
 
               {/* Preview o botón de subir */}

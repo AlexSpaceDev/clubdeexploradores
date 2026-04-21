@@ -10,6 +10,8 @@ interface Props {
 
 export default function AnimalVisor({ animal, status, points }: Props) {
   const canUnlock = points >= animal.costo;
+  const esEspecial = !!animal.especial;
+  const esProximamente = !!animal.proximamente;
 
   return (
     <motion.div
@@ -21,7 +23,9 @@ export default function AnimalVisor({ animal, status, points }: Props) {
         background: '#fff',
         borderRadius: '24px',
         padding: '1.25rem',
-        boxShadow: '0 2px 20px rgba(0,0,0,0.09)',
+        boxShadow: esEspecial
+          ? '0 2px 20px rgba(0,0,0,0.09), 0 0 0 3px #fbbf24'
+          : '0 2px 20px rgba(0,0,0,0.09)',
         display: 'flex',
         flexDirection: 'column',
         gap: '0.75rem',
@@ -35,20 +39,22 @@ export default function AnimalVisor({ animal, status, points }: Props) {
         fontSize: '0.72rem',
         fontWeight: 800,
         letterSpacing: '0.08em',
-        color: '#22a55b',
+        color: esEspecial ? '#b45309' : '#22a55b',
         textTransform: 'uppercase',
         display: 'flex',
         alignItems: 'center',
         gap: '0.35rem',
       }}>
-        🔭 VISOR EXPLORADOR
+        {esEspecial ? '✨ ANIMAL ESPECIAL' : '🔭 VISOR EXPLORADOR'}
       </div>
 
       {/* Imagen */}
       <div style={{
         borderRadius: '16px',
         height: '200px',
-        background: status === 'unlocked' ? animal.color : '#e5e7eb',
+        background: esProximamente
+          ? 'linear-gradient(135deg, #fdf4ff 0%, #fce7f3 100%)'
+          : status === 'unlocked' ? animal.color : '#e5e7eb',
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
@@ -56,19 +62,26 @@ export default function AnimalVisor({ animal, status, points }: Props) {
         position: 'relative',
         gap: '0.5rem',
         overflow: 'hidden',
+        border: esProximamente ? '2px dashed #f0abfc' : 'none',
       }}>
         <span style={{
           fontSize: '5rem',
           lineHeight: 1,
-          filter: status !== 'unlocked'
-            ? 'grayscale(1) blur(3px) opacity(0.3)'
-            : 'none',
+          filter: esProximamente
+            ? 'grayscale(1) blur(5px) opacity(0.35)'
+            : status !== 'unlocked'
+              ? 'grayscale(1) blur(3px) opacity(0.3)'
+              : 'none',
           transition: 'filter 0.4s',
         }}>
           {animal.emoji}
         </span>
 
-        {status !== 'unlocked' && (
+        {esProximamente && (
+          <span style={{ fontSize: '3rem', position: 'absolute' }}>✨</span>
+        )}
+
+        {!esProximamente && status !== 'unlocked' && (
           <span style={{ fontSize: '2.5rem', position: 'absolute' }}>🔒</span>
         )}
 
@@ -125,8 +138,33 @@ export default function AnimalVisor({ animal, status, points }: Props) {
         {animal.descripcion}
       </p>
 
+      {/* Proximamente: teaser */}
+      {esProximamente && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <span style={{
+            background: '#fae8ff',
+            color: '#86198f',
+            fontSize: '0.8rem',
+            fontWeight: 800,
+            padding: '0.3rem 0.75rem',
+            borderRadius: '8px',
+            letterSpacing: '0.05em',
+            textTransform: 'uppercase',
+          }}>
+            🎁 Muy pronto
+          </span>
+          <span style={{
+            fontSize: '0.78rem',
+            fontWeight: 700,
+            color: '#86198f',
+          }}>
+            Sigue completando misiones
+          </span>
+        </div>
+      )}
+
       {/* Locked: costo */}
-      {status !== 'unlocked' && (
+      {!esProximamente && status !== 'unlocked' && (
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
           <span style={{
             background: '#f3f4f6',

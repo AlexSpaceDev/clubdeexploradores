@@ -1,147 +1,177 @@
 export interface Mision {
   id: string;
-  semana: number;      // 1–4
+  etapa: number;      // 1, 2 o 3
   emoji: string;
   titulo: string;
   descripcion: string;
+  pasos: string[];
+  mensajeCompletado: string;
   puntos: number;
 }
 
+export interface EtapaInfo {
+  numero: number;
+  nombre: string;
+  objetivo: string;
+  mensajeFinal: string;
+}
+
+export const etapas: EtapaInfo[] = [
+  {
+    numero: 1,
+    nombre: 'Explorador principiante',
+    objetivo: 'Enganchar con misiones divertidas y rápidas.',
+    mensajeFinal: '¡Increíble! ¡Has descubierto tu primer animal!',
+  },
+  {
+    numero: 2,
+    nombre: 'Explorador aventurero',
+    objetivo: 'Decisiones, creatividad e historias propias.',
+    mensajeFinal: '¡Dos nuevos amigos se unen a la colección!',
+  },
+  {
+    numero: 3,
+    nombre: 'Guardián de los animales',
+    objetivo: 'Emoción, aprendizaje y cierre fuerte.',
+    mensajeFinal: '¡MISIÓN COMPLETADA! ¡Eres un verdadero guardián de los animales!',
+  },
+];
+
 export const misiones: Mision[] = [
 
-  // ── SEMANA 1 ─────────────────────────────────────────────
+  // ── ETAPA 1 — Explorador principiante ──
   {
-    id: 's1-m1',
-    semana: 1,
+    id: 'e1-m1',
+    etapa: 1,
+    emoji: '🧠',
+    titulo: 'Memoria de explorador andino',
+    descripcion: 'Pon a prueba tu memoria con el puzzle de Los Andes.',
+    pasos: [
+      'Mira el rompecabezas de Los Andes por unos segundos…',
+      '¡Ahora tápalo!',
+      'Dibuja el animal que recuerdes en la montaña',
+      '¿Ese animal vivía en lo alto o abajo de la montaña?',
+    ],
+    mensajeCompletado: '¡Muy bien! Tu memoria está despertando…',
+    puntos: 10,
+  },
+  {
+    id: 'e1-m2',
+    etapa: 1,
+    emoji: '✨',
+    titulo: 'Animal mágico de los Andes',
+    descripcion: 'Elige un animal y dale un poder especial.',
+    pasos: [
+      'Elige un animal del puzzle de Los Andes',
+      'Dibújalo… pero con un poder especial',
+    ],
+    mensajeCompletado: '¡Ese animal es único!',
+    puntos: 10,
+  },
+  {
+    id: 'e1-m3',
+    etapa: 1,
+    emoji: '🔍',
+    titulo: 'Detective de animales',
+    descripcion: 'Dibuja de memoria sin mirar el puzzle.',
+    pasos: [
+      'Mira el puzzle (Andes o Galápagos)',
+      'Sin mirar, dibuja la cara de 2 animales que recuerdes',
+    ],
+    mensajeCompletado: '¡Tu mente es súper rápida!',
+    puntos: 10,
+  },
+  {
+    id: 'e1-m4',
+    etapa: 1,
     emoji: '🎨',
-    titulo: 'Dibuja tu animal favorito del puzzle',
-    descripcion: 'Usa tus colores favoritos y crea tu propia versión del animal. ¡Sé tan creativo como quieras!',
-    puntos: 15,
-  },
-  {
-    id: 's1-m2',
-    semana: 1,
-    emoji: '🏔️',
-    titulo: 'Busca algo en tu entorno que se parezca a una montaña',
-    descripcion: 'Puede ser una nube, una figura o un objeto en casa. Cuéntale a tu familia por qué te recordó a los Andes.',
-    puntos: 15,
-  },
-  {
-    id: 's1-m3',
-    semana: 1,
-    emoji: '🐾',
-    titulo: 'Imita cómo se movería tu animal favorito',
-    descripcion: 'Hazlo con energía y conviértelo en un juego divertido con alguien de tu familia.',
-    puntos: 15,
-  },
-  {
-    id: 's1-m4',
-    semana: 1,
-    emoji: '📖',
-    titulo: 'Lee en voz alta un dato curioso de un animal',
-    descripcion: 'Busca en la página o pregunta a un adulto. ¡Luego cuéntaselo a alguien de tu familia!',
-    puntos: 15,
+    titulo: 'Memoria rápida de colores',
+    descripcion: 'Captura un color del puzzle y el animal que lo lleva.',
+    pasos: [
+      'Mira los colores del puzzle (Andes o Galápagos). ¿Qué color recuerdas?',
+      'Dibújalo y di a qué animal pertenece',
+    ],
+    mensajeCompletado: '¡Memoria de campeón!',
+    puntos: 10,
   },
 
-  // ── SEMANA 2 ─────────────────────────────────────────────
+  // ── ETAPA 2 — Explorador aventurero ──
   {
-    id: 's2-m1',
-    semana: 2,
-    emoji: '🌿',
-    titulo: 'Encuentra una planta o flor en tu barrio',
-    descripcion: 'Observa sus colores y forma. ¿Se parece al hábitat de alguno de los animales del puzzle?',
-    puntos: 20,
-  },
-  {
-    id: 's2-m2',
-    semana: 2,
-    emoji: '🔭',
-    titulo: 'Mira el cielo durante 5 minutos',
-    descripcion: 'Busca aves, nubes o cualquier cosa interesante. ¿Viste algo que se parezca al Cóndor Andino?',
-    puntos: 20,
-  },
-  {
-    id: 's2-m3',
-    semana: 2,
-    emoji: '✏️',
-    titulo: 'Escribe 3 palabras que describan a la tortuga',
-    descripcion: 'Piensa en cómo es, cómo se mueve y dónde vive. Puedes dibujar las palabras con letras coloridas.',
-    puntos: 20,
-  },
-  {
-    id: 's2-m4',
-    semana: 2,
-    emoji: '🧩',
-    titulo: 'Arma el puzzle y nombra todos los animales',
-    descripcion: 'Ponlos por nombre uno a uno mientras los ubicas en su lugar. ¡Pídele a alguien que te tome el tiempo!',
-    puntos: 20,
-  },
-
-  // ── SEMANA 3 ─────────────────────────────────────────────
-  {
-    id: 's3-m1',
-    semana: 3,
-    emoji: '🌊',
-    titulo: 'Aprende qué son las Islas Galápagos',
-    descripcion: 'Pregunta a un adulto o búscalo en un libro. Luego dibuja cómo imaginas que se ven.',
-    puntos: 25,
-  },
-  {
-    id: 's3-m2',
-    semana: 3,
-    emoji: '🦁',
-    titulo: 'Cuenta una historia donde un animal del puzzle es el héroe',
-    descripcion: 'Puede ser corta, de 3 oraciones. ¡La puedes contar, escribir o dibujar en viñetas!',
-    puntos: 25,
-  },
-  {
-    id: 's3-m3',
-    semana: 3,
-    emoji: '🥗',
-    titulo: 'Averigua qué come el Oso de Anteojos',
-    descripcion: 'Pista: le encantan las frutas y plantas del bosque nublado. ¡Cuéntaselo a tu familia en la cena!',
-    puntos: 25,
-  },
-  {
-    id: 's3-m4',
-    semana: 3,
-    emoji: '🎭',
-    titulo: 'Haz una obra de teatro de 1 minuto con un animal',
-    descripcion: 'Elige un animal del puzzle y representa cómo vive su día. Puedes usar juguetes o solo tu cuerpo.',
-    puntos: 25,
-  },
-
-  // ── SEMANA 4 ─────────────────────────────────────────────
-  {
-    id: 's4-m1',
-    semana: 4,
+    id: 'e2-m1',
+    etapa: 2,
     emoji: '🗺️',
-    titulo: 'Dibuja un mapa del Ecuador con los hábitats',
-    descripcion: 'Marca dónde viven: los Andes, la Costa, Galápagos y la Amazonía. Puedes usar colores diferentes para cada zona.',
-    puntos: 30,
+    titulo: 'Elige el camino',
+    descripcion: 'Un animal quiere viajar… tú decides su ruta.',
+    pasos: [
+      'Decide: ¿Va de la montaña al mar? ¿O del mar a la montaña?',
+      'Dibuja su viaje. ¿Qué encontró en el camino?',
+    ],
+    mensajeCompletado: '¡Qué lugar increíble!',
+    puntos: 15,
   },
   {
-    id: 's4-m2',
-    semana: 4,
-    emoji: '💌',
-    titulo: 'Escribe una carta a tu animal favorito',
-    descripcion: 'Cuéntale por qué te gusta, qué harías si lo conocieras y cómo lo cuidarías.',
-    puntos: 30,
+    id: 'e2-m2',
+    etapa: 2,
+    emoji: '🪄',
+    titulo: 'Nuevo habitante',
+    descripcion: 'Crea un animal que nadie ha visto antes.',
+    pasos: [
+      'Inventa y dibuja un animal nuevo para Los Andes o Galápagos',
+    ],
+    mensajeCompletado: '¡Creaste un nuevo amigo!',
+    puntos: 15,
   },
   {
-    id: 's4-m3',
-    semana: 4,
-    emoji: '🌍',
-    titulo: 'Investiga qué animales del puzzle están en peligro',
-    descripcion: 'Pregunta a un adulto o busca en un libro. Comparte lo que aprendiste y piensa en cómo ayudarlos.',
-    puntos: 30,
+    id: 'e2-m3',
+    etapa: 2,
+    emoji: '🌊',
+    titulo: 'Viaje entre mundos',
+    descripcion: 'Un animal quiere explorar y viajar al mar.',
+    pasos: [
+      'Imagina y dibuja la aventura del paisaje del animal',
+    ],
+    mensajeCompletado: '¡Qué viaje tan emocionante!',
+    puntos: 15,
+  },
+
+  // ── ETAPA 3 — Guardián de los animales ──
+  {
+    id: 'e3-m1',
+    etapa: 3,
+    emoji: '🛡️',
+    titulo: 'El guardián final',
+    descripcion: 'Protege a tu animal favorito en su hogar.',
+    pasos: [
+      'Elige tu animal favorito',
+      'Dibújalo en su hogar. ¿Cómo lo cuidarías para que esté a salvo?',
+    ],
+    mensajeCompletado: '¡Eres un guardián de los animales!',
+    puntos: 20,
   },
   {
-    id: 's4-m4',
-    semana: 4,
-    emoji: '🏆',
-    titulo: '¡Muéstrale la colección completa a alguien especial!',
-    descripcion: 'Comparte tu progreso en la página con un familiar o amigo y explícale qué aprendiste de cada animal.',
-    puntos: 30,
+    id: 'e3-m2',
+    etapa: 3,
+    emoji: '🧭',
+    titulo: 'Explorador del Ecuador',
+    descripcion: 'Ubica en el mapa las regiones del país.',
+    pasos: [
+      'Dibuja un mapa del Ecuador y marca dónde están las Islas Galápagos, los Andes y la Amazonía',
+      'Usa colores diferentes para cada zona',
+    ],
+    mensajeCompletado: '¡Eres el mejor explorador de aventuras!',
+    puntos: 20,
+  },
+  {
+    id: 'e3-m3',
+    etapa: 3,
+    emoji: '💚',
+    titulo: 'Guardianes de los animales',
+    descripcion: 'Algunos animales necesitan tu ayuda.',
+    pasos: [
+      'Busca o pregunta por 2 animales en peligro',
+      'Dibújalos en su hogar',
+    ],
+    mensajeCompletado: '¡Increíble! Ahora eres protector de los animales.',
+    puntos: 20,
   },
 ];

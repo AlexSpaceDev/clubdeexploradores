@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { animals } from '../data/animals';
 import { useExplorerStore } from '../store/explorerStore';
 import { useDebugMode } from '../utils/useDebugMode';
@@ -8,20 +8,24 @@ import AnimalVisor from './AnimalVisor';
 export default function AnimalGrid() {
   const { points, animals: animalStates, initAnimals, addPoints, resetAll } = useExplorerStore();
   const debug = useDebugMode();
-  const [activeId, setActiveId] = useState<string>(animals[0].id);
+
+  // Solo los animales desbloqueables entran al store — los "proximamente" son teaser visual.
+  const desbloqueables = useMemo(() => animals.filter((a) => !a.proximamente), []);
+
+  const [activeId, setActiveId] = useState<string>(desbloqueables[0].id);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    initAnimals(animals.map((a) => a.id));
+    initAnimals(desbloqueables.map((a) => a.id));
     setReady(true);
-  }, [initAnimals]);
+  }, [initAnimals, desbloqueables]);
 
-  // 👇 Este useEffect adicional re-inicializa tras un reset
+  // Re-inicializa tras un reset
   useEffect(() => {
     if (ready && animalStates.length === 0) {
-        initAnimals(animals.map((a) => a.id));
+      initAnimals(desbloqueables.map((a) => a.id));
     }
-  }, [animalStates.length, ready, initAnimals]);
+  }, [animalStates.length, ready, initAnimals, desbloqueables]);
 
   const unlockedCount = animalStates.filter((a) => a.status === 'unlocked').length;
   const activeAnimal = animals.find((a) => a.id === activeId)!;
@@ -40,7 +44,7 @@ export default function AnimalGrid() {
           <span>{points} puntos</span>
         </div>
         <div className="unlocked-badge">
-          🦎 {unlockedCount} de {animals.length} descubiertos
+          🦎 {unlockedCount} de {desbloqueables.length} descubiertos
         </div>
         {debug && (
           <div className="test-buttons">
