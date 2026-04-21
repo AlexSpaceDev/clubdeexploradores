@@ -36,12 +36,14 @@ import Steps from './Steps.astro';
 <style>
     .hero-section {
     background: #eef3fb;
-    min-height: 100vh;
+    /* Descontamos la altura del header sticky para que el contenido quede
+       ópticamente centrado en el viewport visible, no desplazado hacia abajo. */
+    min-height: calc(100vh - 64px);
     display: flex;
     align-items: center;
-    padding: 3rem 1.5rem;      
+    padding: 3rem 1.5rem;
     font-family: 'Nunito', sans-serif;
-    box-sizing: border-box;       
+    box-sizing: border-box;
     }
 
   .hero-inner {
