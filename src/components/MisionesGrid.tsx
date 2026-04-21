@@ -25,7 +25,7 @@ export default function MisionesGrid() {
   // Al montar y cada vez que semanaInicio se resetea a null (ej: tras resetMisiones)
   useEffect(() => {
     iniciarApp(TODAS_LAS_IDS);
-  }, [semanaInicio]);
+  }, [semanaInicio, iniciarApp]);
 
   // Resolver objetos completos de las misiones activas (orden preservado)
   const misionesActivas = useMemo(

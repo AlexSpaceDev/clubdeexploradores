@@ -14,14 +14,14 @@ export default function AnimalGrid() {
   useEffect(() => {
     initAnimals(animals.map((a) => a.id));
     setReady(true);
-  }, []);
+  }, [initAnimals]);
 
   // 👇 Este useEffect adicional re-inicializa tras un reset
   useEffect(() => {
     if (ready && animalStates.length === 0) {
         initAnimals(animals.map((a) => a.id));
     }
-  }, [animalStates.length, ready]);
+  }, [animalStates.length, ready, initAnimals]);
 
   const unlockedCount = animalStates.filter((a) => a.status === 'unlocked').length;
   const activeAnimal = animals.find((a) => a.id === activeId)!;

@@ -25,7 +25,7 @@ export default function AnimalCard({ animal, status, points, isActive, onClick }
       }, 1400);
       return () => clearTimeout(timer);
     }
-  }, [status]);
+  }, [status, animal.id, setUnlocked]);
 
   const handleClick = () => {
     onClick(); // siempre activa el visor
