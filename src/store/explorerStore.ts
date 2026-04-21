@@ -7,6 +7,7 @@ export type AnimalStatus = 'locked' | 'unlocking' | 'unlocked';
 export interface AnimalState {
   id: string;
   status: AnimalStatus;
+  unlockedAt?: number;
 }
 
 // ── Helpers de etapas ──────────────────────────────────────────────────────
@@ -37,6 +38,9 @@ interface ExplorerStore {
   points: number;
   animals: AnimalState[];
   misionesCompletadas: string[];
+  // Timestamp (epoch ms) por misión completada. Paralelo a misionesCompletadas
+  // para preservar la API de .includes() sin romper consumidores.
+  misionesCompletadasEn: Record<string, number>;
 
   addPoints: (amount: number) => void;
   initAnimals: (ids: string[]) => void;
@@ -54,6 +58,7 @@ export const useExplorerStore = create<ExplorerStore>()(
       points: 0,
       animals: [],
       misionesCompletadas: [],
+      misionesCompletadasEn: {},
 
       addPoints: (amount) => set((s) => ({ points: s.points + amount })),
 
@@ -82,7 +87,9 @@ export const useExplorerStore = create<ExplorerStore>()(
       setUnlocked: (id) =>
         set((s) => ({
           animals: s.animals.map((a) =>
-            a.id === id ? { ...a, status: 'unlocked' } : a
+            a.id === id
+              ? { ...a, status: 'unlocked', unlockedAt: a.unlockedAt ?? Date.now() }
+              : a
           ),
         })),
 
@@ -91,6 +98,7 @@ export const useExplorerStore = create<ExplorerStore>()(
         if (misionesCompletadas.includes(id)) return;
         set((s) => ({
           misionesCompletadas: [...s.misionesCompletadas, id],
+          misionesCompletadasEn: { ...s.misionesCompletadasEn, [id]: Date.now() },
           points: s.points + puntos,
         }));
       },
@@ -98,6 +106,7 @@ export const useExplorerStore = create<ExplorerStore>()(
       resetMisiones: () =>
         set(() => ({
           misionesCompletadas: [],
+          misionesCompletadasEn: {},
           points: 0,
         })),
 
@@ -106,12 +115,24 @@ export const useExplorerStore = create<ExplorerStore>()(
           points: 0,
           animals: [],
           misionesCompletadas: [],
+          misionesCompletadasEn: {},
         })),
     }),
     {
       name: 'explorer-store',
       // v2: refactor a sistema secuencial de etapas (sin tiempo real)
-      version: 2,
+      // v3: timestamps para analítica futura (unlockedAt, misionesCompletadasEn)
+      version: 3,
+      migrate: (persisted, version) => {
+        const s = (persisted ?? {}) as Partial<ExplorerStore>;
+        if (version < 3) {
+          return {
+            ...s,
+            misionesCompletadasEn: s.misionesCompletadasEn ?? {},
+          } as ExplorerStore;
+        }
+        return s as ExplorerStore;
+      },
     }
   )
 );
