@@ -112,7 +112,7 @@ export const misiones: Mision[] = [
   {
     id: 'e2-m2',
     etapa: 2,
-    emoji: '🪄',
+    emoji: '🦄',
     titulo: 'Nuevo habitante',
     descripcion: 'Crea un animal que nadie ha visto antes.',
     pasos: [

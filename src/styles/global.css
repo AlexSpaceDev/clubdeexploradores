@@ -6,10 +6,17 @@
   padding: 0;
 }
 
+html, body {
+  /* Evita que el sidebar fijo (translateX fuera de pantalla) genere scroll horizontal.
+     `clip` es preferible a `hidden` porque no interfiere con `position: sticky`. */
+  overflow-x: clip;
+}
+
 body {
   font-family: 'Nunito', sans-serif;
 }
 
 html {
   scroll-behavior: smooth;
+  scroll-padding-top: 80px; /* compensa el header sticky al hacer anchor jump */
 }
