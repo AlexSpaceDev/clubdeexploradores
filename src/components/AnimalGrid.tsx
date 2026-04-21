@@ -4,9 +4,18 @@ import { useExplorerStore } from '../store/explorerStore';
 import { useDebugMode } from '../utils/useDebugMode';
 import AnimalCard from './AnimalCard';
 import AnimalVisor from './AnimalVisor';
+import DiscoveryModal from './DiscoveryModal';
 
 export default function AnimalGrid() {
-  const { points, animals: animalStates, initAnimals, addPoints, resetAll } = useExplorerStore();
+  const {
+    points,
+    animals: animalStates,
+    initAnimals,
+    addPoints,
+    resetAll,
+    recienDescubierto,
+    cerrarDescubrimiento,
+  } = useExplorerStore();
   const debug = useDebugMode();
 
   // Solo los animales desbloqueables entran al store — los "proximamente" son teaser visual.
@@ -31,6 +40,9 @@ export default function AnimalGrid() {
   const activeAnimal = animals.find((a) => a.id === activeId)!;
   const activeState = animalStates.find((a) => a.id === activeId);
   const activeStatus = activeState?.status ?? 'locked';
+  const animalDescubierto = recienDescubierto
+    ? animals.find((a) => a.id === recienDescubierto) ?? null
+    : null;
 
   if (!ready) return null;
 
@@ -89,6 +101,8 @@ export default function AnimalGrid() {
         </div>
 
       </div>
+
+      <DiscoveryModal animal={animalDescubierto} onClose={cerrarDescubrimiento} />
     </div>
   );
 }

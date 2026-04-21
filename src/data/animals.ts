@@ -3,6 +3,11 @@ export interface Animal {
   nombre: string;
   emoji: string;
   imagenes?: string[];
+  /** Índice dentro de `imagenes` que se muestra en el popup de descubrimiento.
+   *  Si no se define, se usa la primera (0). */
+  polaroidIndex?: number;
+  /** Ilustración chibi usada en el popup de descubrimiento. */
+  chibi?: string;
   costo: number;
   descripcion: string;
   descripcionCorta: string;
@@ -27,6 +32,7 @@ export const animals: Animal[] = [
       '/images/animals/tortuga-galapagos-2.webp',
       '/images/animals/tortuga-galapagos-3.webp',
     ],
+    polaroidIndex: 1,
     costo: 20,
     descripcion: 'Puede vivir más de 100 años. Es una de las criaturas más antiguas y pacientes del planeta.',
     descripcionCorta: 'Lenta pero sabia',
@@ -59,6 +65,8 @@ export const animals: Animal[] = [
       '/images/animals/condor-andino-2.webp',
       '/images/animals/condor-andino-3.webp',
     ],
+    polaroidIndex: 2,
+    chibi: '/images/chibis/chibi-condor-andino.png',
     costo: 40,
     descripcion: 'El rey de los cielos andinos. Con sus enormes alas planea sobre las montañas sin casi mover un músculo.',
     descripcionCorta: 'Sabio y valiente',

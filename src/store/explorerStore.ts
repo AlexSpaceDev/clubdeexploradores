@@ -60,11 +60,15 @@ interface ExplorerStore {
   misionesCompletadasEn: Record<string, number>;
   // Etapas cuya celebración ya fue confirmada por el usuario (botón Continuar).
   etapasConfirmadas: number[];
+  // Animal recién desbloqueado pendiente de mostrar en el modal de descubrimiento.
+  // Transiente: no se persiste (ver partialize abajo).
+  recienDescubierto: string | null;
 
   addPoints: (amount: number) => void;
   initAnimals: (ids: string[]) => void;
   unlockAnimal: (id: string, cost: number) => void;
   setUnlocked: (id: string) => void;
+  cerrarDescubrimiento: () => void;
 
   completarMision: (id: string, puntos: number) => void;
   confirmarEtapa: (etapa: number) => void;
@@ -80,6 +84,7 @@ export const useExplorerStore = create<ExplorerStore>()(
       misionesCompletadas: [],
       misionesCompletadasEn: {},
       etapasConfirmadas: [],
+      recienDescubierto: null,
 
       addPoints: (amount) => set((s) => ({ points: s.points + amount })),
 
@@ -106,13 +111,22 @@ export const useExplorerStore = create<ExplorerStore>()(
       },
 
       setUnlocked: (id) =>
-        set((s) => ({
-          animals: s.animals.map((a) =>
-            a.id === id
-              ? { ...a, status: 'unlocked', unlockedAt: a.unlockedAt ?? Date.now() }
-              : a
-          ),
-        })),
+        set((s) => {
+          const prev = s.animals.find((a) => a.id === id);
+          const yaEstaba = prev?.status === 'unlocked';
+          return {
+            animals: s.animals.map((a) =>
+              a.id === id
+                ? { ...a, status: 'unlocked', unlockedAt: a.unlockedAt ?? Date.now() }
+                : a
+            ),
+            // Solo disparamos el modal si es la primera vez que se desbloquea
+            // (evita que un re-render o migración vuelva a abrirlo).
+            recienDescubierto: yaEstaba ? s.recienDescubierto : id,
+          };
+        }),
+
+      cerrarDescubrimiento: () => set({ recienDescubierto: null }),
 
       completarMision: (id, puntos) => {
         const { misionesCompletadas } = get();
@@ -146,10 +160,17 @@ export const useExplorerStore = create<ExplorerStore>()(
           misionesCompletadas: [],
           misionesCompletadasEn: {},
           etapasConfirmadas: [],
+          recienDescubierto: null,
         })),
     }),
     {
       name: 'explorer-store',
+      // recienDescubierto es transiente — no queremos que un refresh en
+      // medio del flujo vuelva a abrir el modal en la siguiente sesión.
+      partialize: (state) => {
+        const { recienDescubierto: _rd, ...rest } = state;
+        return rest;
+      },
       // v2: refactor a sistema secuencial de etapas (sin tiempo real)
       // v3: timestamps para analítica futura (unlockedAt, misionesCompletadasEn)
       // v4: etapasConfirmadas — usuario debe dar "Continuar" tras cada etapa
