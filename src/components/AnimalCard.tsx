@@ -226,9 +226,9 @@ export default function AnimalCard({ animal, status, points, isActive, onClick }
           whileHover={{ scale: 1.02 }}
         >
           <div className="animal-image-placeholder" style={{ position: 'relative', overflow: 'hidden' }}>
-            {animal.imagen && (
+            {animal.imagenes?.[0] && (
               <img
-                src={animal.imagen}
+                src={animal.imagenes[0]}
                 alt={animal.nombre}
                 style={{
                   width: '100%',
