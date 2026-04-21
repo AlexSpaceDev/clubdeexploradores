@@ -136,7 +136,7 @@
     transition: opacity 0.22s ease;
   }
 
-  @media (hover: hover) {
+  @media (any-hover: hover) {
     .prox-card:hover {
       transform: translateY(-5px);
       /* Box shadow verde como en el diseño de referencia */
@@ -167,8 +167,8 @@
     }
   }
 
-  /* En táctil: efecto mientras se presiona o cuando queda seleccionada */
-  @media (hover: none) {
+  /* En táctil puro: efecto mientras se presiona o cuando queda seleccionada */
+  @media (any-hover: none) {
     .prox-card:active,
     .prox-card.is-selected {
       transform: translateY(-5px);

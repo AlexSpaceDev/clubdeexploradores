@@ -87,15 +87,15 @@ const steps = [
     cursor: default;
   }
 
-  @media (hover: hover) {
+  @media (any-hover: hover) {
     .step-card:hover {
       transform: translateX(5px);
       box-shadow: -4px 4px 0px var(--accent);
     }
   }
 
-  /* En táctil: efecto mientras se presiona o cuando queda seleccionado */
-  @media (hover: none) {
+  /* En táctil puro: efecto mientras se presiona o cuando queda seleccionado */
+  @media (any-hover: none) {
     .step-card:active,
     .step-card.is-selected {
       transform: translateX(5px);
