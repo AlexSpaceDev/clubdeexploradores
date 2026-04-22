@@ -63,7 +63,7 @@ export const misiones: Mision[] = [
       '¿Ese animal vivía en lo alto o abajo de la montaña?',
     ],
     mensajeCompletado: '¡Muy bien! Tu memoria está despertando…',
-    puntos: 10,
+    puntos: 5,
   },
   {
     id: 'e1-m2',
@@ -76,7 +76,7 @@ export const misiones: Mision[] = [
       'Dibújalo… pero con un poder especial',
     ],
     mensajeCompletado: '¡Ese animal es único!',
-    puntos: 10,
+    puntos: 5,
   },
   {
     id: 'e1-m3',
@@ -89,7 +89,7 @@ export const misiones: Mision[] = [
       'Sin mirar, dibuja la cara de 2 animales que recuerdes',
     ],
     mensajeCompletado: '¡Tu mente es súper rápida!',
-    puntos: 10,
+    puntos: 5,
   },
   {
     id: 'e1-m4',
@@ -102,7 +102,7 @@ export const misiones: Mision[] = [
       'Dibújalo y di a qué animal pertenece',
     ],
     mensajeCompletado: '¡Memoria de campeón!',
-    puntos: 10,
+    puntos: 5,
   },
 
   // ── ETAPA 2 — Explorador aventurero ──
@@ -117,7 +117,7 @@ export const misiones: Mision[] = [
       'Dibuja su viaje. ¿Qué encontró en el camino?',
     ],
     mensajeCompletado: '¡Qué lugar increíble!',
-    puntos: 15,
+    puntos: 10,
   },
   {
     id: 'e2-m2',
@@ -129,7 +129,7 @@ export const misiones: Mision[] = [
       'Inventa y dibuja un animal nuevo para Los Andes o Galápagos',
     ],
     mensajeCompletado: '¡Creaste un nuevo amigo!',
-    puntos: 15,
+    puntos: 20,
   },
   {
     id: 'e2-m3',
@@ -141,7 +141,7 @@ export const misiones: Mision[] = [
       'Imagina y dibuja la aventura del paisaje del animal',
     ],
     mensajeCompletado: '¡Qué viaje tan emocionante!',
-    puntos: 15,
+    puntos: 30,
   },
 
   // ── ETAPA 3 — Guardián de los animales ──
@@ -182,6 +182,6 @@ export const misiones: Mision[] = [
       'Dibújalos en su hogar',
     ],
     mensajeCompletado: '¡Increíble! Ahora eres protector de los animales.',
-    puntos: 20,
+    puntos: 30,
   },
 ];

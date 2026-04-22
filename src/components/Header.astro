@@ -53,52 +53,53 @@ const navItems = [
       </button>
     </div>
   </div>
-
-  {/* Sidebar mobile */}
-  <div class="sidebar-overlay" data-overlay aria-hidden="true"></div>
-
-  <aside
-    id="mobile-sidebar"
-    class="mobile-sidebar"
-    aria-label="Menú de navegación"
-    aria-hidden="true"
-    data-sidebar
-  >
-    <div class="sidebar-head">
-      <span class="sidebar-title">
-        <span class="sidebar-dot"></span>
-        Menú
-      </span>
-      <button
-        class="sidebar-close"
-        type="button"
-        aria-label="Cerrar menú"
-        data-close
-      >
-        ✕
-      </button>
-    </div>
-
-    <nav class="sidebar-nav" aria-label="Navegación móvil">
-      <ul>
-        {navItems.map((item) => (
-          <li>
-            <a href={item.href} data-sidebar-link>
-              <span class="sidebar-emoji">{item.emoji}</span>
-              <span>{item.label}</span>
-              <span class="sidebar-arrow">→</span>
-            </a>
-          </li>
-        ))}
-      </ul>
-    </nav>
-
-    <div class="sidebar-foot">
-      <span>🦎 Club de Exploradores</span>
-      <span class="sidebar-brand">Print Craft</span>
-    </div>
-  </aside>
 </header>
+
+{/* Sidebar mobile — fuera del <header> para que position:fixed use el viewport
+   (el backdrop-filter del header crea un containing block y rompe el fixed) */}
+<div class="sidebar-overlay" data-overlay aria-hidden="true"></div>
+
+<aside
+  id="mobile-sidebar"
+  class="mobile-sidebar"
+  aria-label="Menú de navegación"
+  aria-hidden="true"
+  data-sidebar
+>
+  <div class="sidebar-head">
+    <span class="sidebar-title">
+      <span class="sidebar-dot"></span>
+      Menú
+    </span>
+    <button
+      class="sidebar-close"
+      type="button"
+      aria-label="Cerrar menú"
+      data-close
+    >
+      ✕
+    </button>
+  </div>
+
+  <nav class="sidebar-nav" aria-label="Navegación móvil">
+    <ul>
+      {navItems.map((item) => (
+        <li>
+          <a href={item.href} data-sidebar-link>
+            <span class="sidebar-emoji">{item.emoji}</span>
+            <span>{item.label}</span>
+            <span class="sidebar-arrow">→</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+
+  <div class="sidebar-foot">
+    <span>🦎 Club de Exploradores</span>
+    <span class="sidebar-brand">Print Craft</span>
+  </div>
+</aside>
 
 <script>
   import { isMuted, toggleMuted, subscribeMuted, playSound } from '../lib/sounds';
