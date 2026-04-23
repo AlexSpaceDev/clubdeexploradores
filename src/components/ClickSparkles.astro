@@ -1,0 +1,102 @@
+---
+---
+
+<div id="click-sparkles-root" aria-hidden="true"></div>
+
+<script>
+  const root = document.getElementById('click-sparkles-root');
+  if (root) {
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+    const COLORS = ['#22c55e', '#fbbf24', '#0ea5e9', '#f472b6', '#ffffff'];
+    const PARTICLES_PER_CLICK = 6;
+    const LIFE_MS = 700;
+
+    function spawn(x: number, y: number) {
+      for (let i = 0; i < PARTICLES_PER_CLICK; i++) {
+        const p = document.createElement('span');
+        p.className = 'click-spark';
+
+        const angle = (i / PARTICLES_PER_CLICK) * Math.PI * 2 + Math.random() * 0.5;
+        const dist = 22 + Math.random() * 18;
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist;
+        const size = 5 + Math.random() * 4;
+        const color = COLORS[Math.floor(Math.random() * COLORS.length)];
+
+        p.style.left = `${x}px`;
+        p.style.top = `${y}px`;
+        p.style.width = `${size}px`;
+        p.style.height = `${size}px`;
+        p.style.background = color;
+        p.style.setProperty('--dx', `${dx}px`);
+        p.style.setProperty('--dy', `${dy}px`);
+
+        p.addEventListener('animationend', () => p.remove(), { once: true });
+        root.appendChild(p);
+      }
+    }
+
+    document.addEventListener(
+      'pointerdown',
+      (e) => {
+        if (reducedMotion.matches) return;
+        if (e.pointerType === 'mouse' && e.button !== 0) return;
+
+        const target = e.target as Element | null;
+        if (target?.closest('input, textarea, select')) return;
+
+        spawn(e.clientX, e.clientY);
+      },
+      { passive: true }
+    );
+
+    // Limpieza si la pestaña pasa a background (evita dejar huérfanos)
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) root.replaceChildren();
+    });
+  }
+</script>
+
+<style is:global>
+  #click-sparkles-root {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 9999;
+    overflow: hidden;
+  }
+
+  .click-spark {
+    position: fixed;
+    border-radius: 50%;
+    pointer-events: none;
+    transform: translate(-50%, -50%);
+    box-shadow: 0 0 8px currentColor;
+    will-change: transform, opacity;
+    animation: click-spark-fly 700ms ease-out forwards;
+  }
+
+  @keyframes click-spark-fly {
+    0% {
+      transform: translate(-50%, -50%) scale(0.4);
+      opacity: 0;
+    }
+    18% {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+      transform: translate(
+          calc(-50% + var(--dx)),
+          calc(-50% + var(--dy))
+        )
+        scale(0.2);
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .click-spark { display: none; }
+  }
+</style>

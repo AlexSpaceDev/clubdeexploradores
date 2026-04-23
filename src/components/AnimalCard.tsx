@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import type { Animal } from '../data/animals';
 import type { AnimalStatus } from '../store/explorerStore';
 import { useExplorerStore } from '../store/explorerStore';
+import { playSound } from '../lib/sounds';
 
 interface Props {
   animal: Animal;
@@ -17,6 +18,8 @@ export default function AnimalCard({ animal, status, points, isActive, onClick }
   const [shake, setShake] = useState(false);
 
   const canUnlock = points >= animal.costo;
+  const esEspecial = !!animal.especial;
+  const esProximamente = !!animal.proximamente;
 
   useEffect(() => {
     if (status === 'unlocking') {
@@ -25,17 +28,20 @@ export default function AnimalCard({ animal, status, points, isActive, onClick }
       }, 1400);
       return () => clearTimeout(timer);
     }
-  }, [status]);
+  }, [status, animal.id, setUnlocked]);
 
   const handleClick = () => {
     onClick(); // siempre activa el visor
 
+    if (esProximamente) return; // no intenta desbloquear
+
     if (status === 'locked') {
       if (canUnlock) {
         unlockAnimal(animal.id, animal.costo);
+        playSound(esEspecial ? 'desbloqueo-especial' : 'desbloqueo-normal');
       } else {
-        // Shake: no tiene puntos
         setShake(true);
+        playSound('lock');
         setTimeout(() => setShake(false), 600);
       }
     }
@@ -49,6 +55,14 @@ export default function AnimalCard({ animal, status, points, isActive, onClick }
     },
   };
 
+  // Estilos especiales: marco dorado + glow suave
+  const especialStyles = esEspecial
+    ? {
+        boxShadow: '0 0 0 3px #fbbf24, 0 8px 24px rgba(251,191,36,0.28)',
+        borderRadius: '22px',
+      }
+    : {};
+
   return (
     <motion.div
       layout
@@ -56,53 +70,126 @@ export default function AnimalCard({ animal, status, points, isActive, onClick }
       animate={shake ? 'shaking' : 'idle'}
       variants={shakeVariants}
       onClick={handleClick}
-      style={{ cursor: 'pointer' }}
+      style={{ cursor: 'pointer', ...especialStyles, position: 'relative' }}
     >
-      {/* ── LOCKED ── */}
-      {status === 'locked' && (
-  <motion.div
-    className={`animal-card locked ${canUnlock ? 'can-unlock' : ''}`}
-    whileHover={{ scale: 1.02 }}
-    whileTap={{ scale: 0.97 }}
-  >
-    {/* Emoji + candado juntos, sin absolute */}
-    <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
-      <div className="card-emoji blurred">{animal.emoji}</div>
-      <span style={{
-        position: 'absolute',
-        bottom: '-6px',
-        right: '-6px',
-        fontSize: '1.6rem',
-        lineHeight: 1,
-      }}>🔒</span>
-    </div>
-
-    {/* Texto + badge debajo, con espacio limpio */}
-    <div className="card-cost" style={{ marginTop: '0.6rem' }}>
-      {canUnlock && (
-        <span className="cost-label">¡Toca para desbloquear!</span>
-      )}
-      <span
-        className="cost-badge"
-        style={{
-          background: canUnlock ? '#22c55e' : '#e5e7eb',
-          color: canUnlock ? '#fff' : '#6b7280',
-          fontSize: '1rem',
-          padding: '0.5rem 1.1rem',
+      {/* Badge ESPECIAL (esquina superior derecha) */}
+      {esEspecial && (
+        <div style={{
+          position: 'absolute',
+          top: '-10px',
+          right: '-8px',
+          background: 'linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%)',
+          color: '#78350f',
+          fontSize: '0.62rem',
+          fontWeight: 900,
+          letterSpacing: '0.08em',
+          padding: '0.25rem 0.6rem',
+          borderRadius: '999px',
+          boxShadow: '0 3px 10px rgba(245,158,11,0.4)',
+          zIndex: 2,
           display: 'flex',
           alignItems: 'center',
-          gap: '0.35rem',
-        }}
-      >
-        <span style={{ fontSize: '1.2rem' }}>⭐</span>
-        {animal.costo} pts
-      </span>
-    </div>
-  </motion.div>
-)}
+          gap: '0.2rem',
+        }}>
+          ✨ ESPECIAL
+        </div>
+      )}
+
+      {/* ── PROXIMAMENTE (teaser) ── */}
+      {esProximamente && (
+        <motion.div
+          className="animal-card proximamente"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          style={{
+            background: 'linear-gradient(135deg, #fdf4ff 0%, #fce7f3 100%)',
+            border: '2px dashed #f0abfc',
+            justifyContent: 'center',
+          }}
+        >
+          <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="card-emoji" style={{
+              filter: 'grayscale(1) blur(4px) opacity(0.35)',
+            }}>
+              {animal.emoji}
+            </div>
+            <span style={{
+              position: 'absolute',
+              fontSize: '1.8rem',
+              lineHeight: 1,
+            }}>
+              ✨
+            </span>
+          </div>
+
+          <div className="card-cost" style={{ marginTop: '0.6rem' }}>
+            <span style={{
+              fontSize: '0.72rem',
+              fontWeight: 800,
+              color: '#a21caf',
+              letterSpacing: '0.05em',
+              textTransform: 'uppercase',
+            }}>
+              Muy pronto
+            </span>
+            <span style={{
+              background: '#fae8ff',
+              color: '#86198f',
+              fontSize: '0.72rem',
+              fontWeight: 700,
+              padding: '0.3rem 0.7rem',
+              borderRadius: '999px',
+              lineHeight: 1.3,
+            }}>
+              🎁 Nuevo explorador
+            </span>
+          </div>
+        </motion.div>
+      )}
+
+      {/* ── LOCKED ── */}
+      {!esProximamente && status === 'locked' && (
+        <motion.div
+          className={`animal-card locked ${canUnlock ? 'can-unlock' : ''}`}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+        >
+          <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div className="card-emoji blurred">{animal.emoji}</div>
+            <span style={{
+              position: 'absolute',
+              bottom: '-6px',
+              right: '-6px',
+              fontSize: '1.6rem',
+              lineHeight: 1,
+            }}>🔒</span>
+          </div>
+
+          <div className="card-cost" style={{ marginTop: '0.6rem' }}>
+            {canUnlock && (
+              <span className="cost-label">¡Toca para desbloquear!</span>
+            )}
+            <span
+              className="cost-badge"
+              style={{
+                background: canUnlock ? '#22c55e' : '#e5e7eb',
+                color: canUnlock ? '#fff' : '#6b7280',
+                fontSize: '1rem',
+                padding: '0.5rem 1.1rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.35rem',
+              }}
+            >
+              <span style={{ fontSize: '1.2rem' }}>⭐</span>
+              {animal.costo} pts
+            </span>
+          </div>
+        </motion.div>
+      )}
 
       {/* ── UNLOCKING ── */}
-      {status === 'unlocking' && (
+      {!esProximamente && status === 'unlocking' && (
         <motion.div
           className="animal-card unlocking"
           initial={{ scale: 1 }}
@@ -132,7 +219,7 @@ export default function AnimalCard({ animal, status, points, isActive, onClick }
       )}
 
       {/* ── UNLOCKED ── */}
-      {status === 'unlocked' && (
+      {!esProximamente && status === 'unlocked' && (
         <motion.div
           className="animal-card unlocked"
           style={{ background: animal.color }}
@@ -141,27 +228,27 @@ export default function AnimalCard({ animal, status, points, isActive, onClick }
           transition={{ duration: 0.5, ease: 'easeOut' }}
           whileHover={{ scale: 1.02 }}
         >
-            <div className="animal-image-placeholder" style={{ position: 'relative', overflow: 'hidden' }}>
-            {animal.imagen && (
-                <img
-                src={animal.imagen}
+          <div className="animal-image-placeholder" style={{ position: 'relative', overflow: 'hidden' }}>
+            {animal.imagenes?.[0] && (
+              <img
+                src={animal.imagenes[0]}
                 alt={animal.nombre}
                 style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover',
-                    position: 'absolute',
-                    top: 0,
-                    left: 0,
-                    borderRadius: '12px',
-                    filter: 'brightness(0.72) saturate(0.85) blur(2px)', 
+                  width: '100%',
+                  height: '100%',
+                  objectFit: 'cover',
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  borderRadius: '12px',
+                  filter: 'brightness(0.72) saturate(0.85) blur(2px)',
                 }}
-                />
+              />
             )}
             <span className="card-emoji" style={{ position: 'relative', zIndex: 1 }}>
-                {animal.emoji}
+              {animal.emoji}
             </span>
-            </div>
+          </div>
           <div className="card-info">
             <div className="card-header">
               <h3 className="animal-name">{animal.nombre}</h3>

@@ -1,84 +1,109 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { misiones } from '../data/missions';
-import { useExplorerStore } from '../store/explorerStore';
+import { etapas, misiones } from '../data/missions';
+import {
+  calcularEtapaActual,
+  etapaPendienteDeCelebrar,
+  misionesActivasParaEtapa,
+  useExplorerStore,
+} from '../store/explorerStore';
 import { useDebugMode } from '../utils/useDebugMode';
 import MisionCard from './MisionCard';
+import { playSound } from '../lib/sounds';
 
-// Pool ordenado — orden fijo para toda la app
-const POOL = [...misiones].sort((a, b) => a.semana - b.semana || a.id.localeCompare(b.id));
-const TODAS_LAS_IDS = POOL.map((m) => m.id);
+const TOTAL_ETAPAS = etapas.length;
 
 export default function MisionesGrid() {
   const {
     points,
     misionesCompletadas,
-    misionesActivasIds,
-    semanaInicio,
+    etapasConfirmadas,
     completarMision,
-    iniciarApp,
-    avanzarSemanaDebug,
+    confirmarEtapa,
     resetMisiones,
   } = useExplorerStore();
   const debug = useDebugMode();
 
-  // Al montar y cada vez que semanaInicio se resetea a null (ej: tras resetMisiones)
-  useEffect(() => {
-    iniciarApp(TODAS_LAS_IDS);
-  }, [semanaInicio]);
-
-  // Resolver objetos completos de las misiones activas (orden preservado)
+  // ── Derivados ──
+  const etapaActual = useMemo(
+    () => calcularEtapaActual(misionesCompletadas),
+    [misionesCompletadas]
+  );
+  const etapaInfo = etapas.find((e) => e.numero === etapaActual)!;
   const misionesActivas = useMemo(
-    () => misionesActivasIds.map((id) => POOL.find((m) => m.id === id)).filter(Boolean) as typeof misiones,
-    [misionesActivasIds]
+    () => misionesActivasParaEtapa(etapaActual, misionesCompletadas),
+    [etapaActual, misionesCompletadas]
   );
 
-  // Estados derivados
-  const completadasEstaSemana = misionesActivas.filter((m) => misionesCompletadas.includes(m.id));
-  const pendientesEstaSemana  = misionesActivas.filter((m) => !misionesCompletadas.includes(m.id));
-  const semanaCompleta        = misionesActivas.length > 0 && pendientesEstaSemana.length === 0;
-  const todasCompletadas      = TODAS_LAS_IDS.every((id) => misionesCompletadas.includes(id));
+  const misionesDeEtapaActual = misiones.filter((m) => m.etapa === etapaActual);
+  const completadasEnEtapa = misionesDeEtapaActual.filter((m) =>
+    misionesCompletadas.includes(m.id)
+  ).length;
+  const etapaCompleta = misionesActivas.length === 0;
+  const todasCompletadas = misionesCompletadas.length === misiones.length;
 
-  // Misión destacada = primera pendiente de la semana
-  const misionDestacada = pendientesEstaSemana[0] ?? null;
+  const misionDestacada = misionesActivas[0] ?? null;
 
-  // Contadores para la barra de progreso
-  const totalMisiones   = misiones.length;
-  const completadasCount = misionesCompletadas.length;
-  // Semana visual = bloque de 4 que estamos viendo actualmente
-  const semanaVisual = Math.floor(
-    TODAS_LAS_IDS.findIndex((id) => misionesActivasIds[0] === id) / 4
-  ) + 1;
+  const completadasTotales = misionesCompletadas.length;
+  const totalMisiones = misiones.length;
 
-  // ── Debug helpers ──────────────────────────────────────────────────────
+  // ── Celebración de etapa (pendiente de confirmar) ──
+  const etapaCelebracion = useMemo(
+    () => etapaPendienteDeCelebrar(misionesCompletadas, etapasConfirmadas),
+    [misionesCompletadas, etapasConfirmadas]
+  );
+  const celebracionInfo = etapaCelebracion !== null
+    ? etapas.find((e) => e.numero === etapaCelebracion) ?? null
+    : null;
+  const hayCelebracion = celebracionInfo !== null;
+
+  // ── Toast ──
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const mostrarToast = (mensaje: string) => {
+    if (toastTimerRef.current) clearTimeout(toastTimerRef.current);
+    setToast(mensaje);
+    toastTimerRef.current = setTimeout(() => setToast(null), 2800);
+  };
+
+  // ── Completar misión (con toast + sonido) ──
+  const completarConToast = (id: string, puntos: number, mensaje: string) => {
+    // ¿Esta misión es la última pendiente de su etapa?
+    const esUltimaDeEtapa = misionesActivas.length === 1 && misionesActivas[0]?.id === id;
+
+    completarMision(id, puntos);
+
+    if (esUltimaDeEtapa) {
+      // La celebración grande se encarga del feedback; no doblamos con toast
+      // ni tocamos el sonido de misión completada.
+      playSound('etapa-completada');
+    } else {
+      mostrarToast(mensaje);
+      playSound('mision-completada');
+    }
+  };
+
+  // ── Debug helpers ──
   const handleMasUna = () => {
-    const primera = pendientesEstaSemana[0];
-    if (primera) completarMision(primera.id, primera.puntos);
+    const primera = misionesActivas[0];
+    if (primera) completarConToast(primera.id, primera.puntos, primera.mensajeCompletado);
+  };
+  const handleCompletarEtapa = () => {
+    misionesActivas.forEach((m) => completarMision(m.id, m.puntos));
+    mostrarToast(etapaInfo.mensajeFinal);
   };
 
-  const handleCompletarSemana = () => {
-    pendientesEstaSemana.forEach((m) => completarMision(m.id, m.puntos));
-  };
-
-  const handleSiguienteSemana = () => {
-    avanzarSemanaDebug(TODAS_LAS_IDS);
-  };
-
-  const debugDesactivado = semanaCompleta || todasCompletadas;
-
-  // ── Estado de imagen para la misión destacada ──────────────────────────
+  // ── Imagen de la misión destacada ──
   const inputDestacadaRef = useRef<HTMLInputElement>(null);
   const [imagenDestacada, setImagenDestacada] = useState<string | null>(null);
-
   const handleFileDestacada = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
     setImagenDestacada(URL.createObjectURL(file));
   };
-
   const handleCompletarDestacada = () => {
     if (!misionDestacada) return;
-    completarMision(misionDestacada.id, misionDestacada.puntos);
+    completarConToast(misionDestacada.id, misionDestacada.puntos, misionDestacada.mensajeCompletado);
     setImagenDestacada(null);
   };
 
@@ -88,14 +113,11 @@ export default function MisionesGrid() {
       {/* ── Barra debug ── */}
       {debug && (
         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
-          <button onClick={handleMasUna} disabled={debugDesactivado} style={debugBtn()}>
+          <button onClick={handleMasUna} disabled={etapaCompleta} style={debugBtn()}>
             +1 misión completada
           </button>
-          <button onClick={handleCompletarSemana} disabled={debugDesactivado} style={debugBtn()}>
-            Completar semana
-          </button>
-          <button onClick={handleSiguienteSemana} style={debugBtn(false, true)}>
-            ⏭ Siguiente semana
+          <button onClick={handleCompletarEtapa} disabled={etapaCompleta} style={debugBtn()}>
+            Completar etapa
           </button>
           <button onClick={resetMisiones} style={debugBtn(true)}>
             🔄 Reset misiones
@@ -128,22 +150,36 @@ export default function MisionesGrid() {
               fontWeight: 800, fontSize: '0.9rem',
               padding: '0.4rem 1rem', borderRadius: '999px',
             }}>
-              ✅ {completadasEstaSemana.length}/{misionesActivas.length} misiones
+              ✅ {completadasEnEtapa}/{misionesDeEtapaActual.length} de la etapa
             </div>
           </div>
 
-          {/* Card destacada — tres estados */}
-          {todasCompletadas ? (
+          {/* Card destacada — prioridad: celebración > final > destacada */}
+          {hayCelebracion && celebracionInfo ? (
+            <HeroCard
+              label={`🎉 ETAPA ${celebracionInfo.numero} COMPLETADA`}
+              titulo={celebracionInfo.celebracionVisor}
+              descripcion={
+                celebracionInfo.numero < TOTAL_ETAPAS
+                  ? `Prepárate para la siguiente aventura: ${etapas[celebracionInfo.numero].nombre}.`
+                  : '¡Has llegado al final del viaje, explorador!'
+              }
+            />
+          ) : todasCompletadas ? (
             <HeroCard
               label="🏆 EXPLORADOR COMPLETO"
               titulo="¡Completaste todas las misiones!"
-              descripcion={`Eres un verdadero explorador. Ahora desbloquea todos los animales con tus ${points} puntos.`}
+              descripcion={`Eres un verdadero guardián de los animales. Aún tienes ${points} puntos para desbloquear exploradores.`}
             />
-          ) : semanaCompleta ? (
+          ) : etapaCompleta ? (
             <HeroCard
-              label="🎉 ¡SEMANA COMPLETADA!"
-              titulo="¡Lo lograste esta semana!"
-              descripcion="Vuelve la siguiente semana para descubrir 4 nuevas misiones y seguir ganando puntos."
+              label={`🎉 ETAPA ${etapaActual} COMPLETADA`}
+              titulo={etapaInfo.mensajeFinal}
+              descripcion={
+                etapaActual < TOTAL_ETAPAS
+                  ? `Prepárate para la siguiente aventura: ${etapas[etapaActual].nombre}.`
+                  : '¡Has llegado al final del viaje!'
+              }
             />
           ) : misionDestacada ? (
             <motion.div
@@ -156,16 +192,35 @@ export default function MisionesGrid() {
               }}
             >
               <div style={{ fontSize: '0.72rem', fontWeight: 800, letterSpacing: '0.1em', textTransform: 'uppercase', opacity: 0.85, marginBottom: '0.6rem' }}>
-                MISIÓN EXPLORADOR DESTACADA
+                MISIÓN DESTACADA · ETAPA {etapaActual}
               </div>
-              <div style={{ fontSize: 'clamp(1.2rem, 4vw, 1.65rem)', fontWeight: 900, lineHeight: 1.25, marginBottom: '0.75rem' }}>
+              <div style={{ fontSize: 'clamp(1.2rem, 4vw, 1.65rem)', fontWeight: 900, lineHeight: 1.25, marginBottom: '0.6rem' }}>
                 {misionDestacada.emoji} {misionDestacada.titulo}
               </div>
-              <div style={{ fontSize: '0.92rem', opacity: 0.9, lineHeight: 1.6, marginBottom: '1.25rem' }}>
+              <div style={{ fontSize: '0.92rem', opacity: 0.9, lineHeight: 1.6, marginBottom: '1rem' }}>
                 {misionDestacada.descripcion}
               </div>
 
-              {/* Preview de imagen si ya se subió */}
+              {/* Pasos */}
+              {misionDestacada.pasos.length > 0 && (
+                <ul style={{
+                  margin: '0 0 1.25rem 0',
+                  paddingLeft: '1.2rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.3rem',
+                  fontSize: '0.86rem',
+                  opacity: 0.95,
+                  lineHeight: 1.5,
+                  fontWeight: 600,
+                }}>
+                  {misionDestacada.pasos.map((paso, i) => (
+                    <li key={i}>{paso}</li>
+                  ))}
+                </ul>
+              )}
+
+              {/* Preview */}
               <AnimatePresence>
                 {imagenDestacada && (
                   <motion.div
@@ -192,11 +247,13 @@ export default function MisionesGrid() {
               {/* Botones */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                 {!imagenDestacada ? (
-                  /* Estado 1: Subir imagen es el protagonista */
                   <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
                     <motion.button
                       whileTap={{ scale: 0.97 }}
-                      onClick={() => inputDestacadaRef.current?.click()}
+                      onClick={() => {
+                        playSound('press-button');
+                        inputDestacadaRef.current?.click();
+                      }}
                       style={{
                         background: 'rgba(255,255,255,0.95)',
                         color: '#16a34a',
@@ -224,7 +281,6 @@ export default function MisionesGrid() {
                     </div>
                   </div>
                 ) : (
-                  /* Estado 2: Completar misión es el protagonista — fila en desktop, columna en móvil */
                   <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', alignItems: 'center' }}>
                     <motion.button
                       initial={{ opacity: 0, scale: 0.95 }}
@@ -246,7 +302,10 @@ export default function MisionesGrid() {
                       ✅ Completar misión +{misionDestacada.puntos} pts
                     </motion.button>
                     <button
-                      onClick={() => inputDestacadaRef.current?.click()}
+                      onClick={() => {
+                        playSound('press-button');
+                        inputDestacadaRef.current?.click();
+                      }}
                       style={{
                         background: 'transparent',
                         color: 'rgba(255,255,255,0.75)',
@@ -265,7 +324,6 @@ export default function MisionesGrid() {
                 )}
               </div>
 
-              {/* Input oculto */}
               <input
                 ref={inputDestacadaRef}
                 type="file"
@@ -277,32 +335,90 @@ export default function MisionesGrid() {
           ) : null}
 
           <div className="progreso-mobile" style={{ marginTop: '1.25rem' }}>
-            <ProgresoBar completadas={completadasCount} total={totalMisiones} semana={semanaVisual} />
+            <ProgresoBar completadas={completadasTotales} total={totalMisiones} etapa={etapaActual} nombreEtapa={etapaInfo.nombre} />
           </div>
         </div>
 
         {/* ── Columna derecha ── */}
         <div className="misiones-right">
-          <div style={{ fontWeight: 900, fontSize: '1.05rem', color: '#111827', marginBottom: '1rem' }}>
-            Actividades para desbloquear personajes
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-            {misionesActivas.map((m) => (
-              <MisionCard
-                key={m.id}
-                mision={m}
-                completada={misionesCompletadas.includes(m.id)}
-                onCompletar={() => completarMision(m.id, m.puntos)}
+          <AnimatePresence mode="wait">
+            {hayCelebracion && celebracionInfo ? (
+              <CelebracionMisiones
+                key={`celebracion-${celebracionInfo.numero}`}
+                etapa={celebracionInfo.numero}
+                mensaje={celebracionInfo.celebracionMisiones}
+                esUltima={celebracionInfo.numero >= TOTAL_ETAPAS}
+                onContinuar={() => {
+                  playSound('press-button');
+                  confirmarEtapa(celebracionInfo.numero);
+                }}
               />
-            ))}
-          </div>
+            ) : (
+              <motion.div
+                key={`misiones-${etapaActual}`}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.25 }}
+              >
+                <div style={{ fontWeight: 900, fontSize: '1.05rem', color: '#111827', marginBottom: '0.25rem' }}>
+                  Etapa {etapaActual}: {etapaInfo.nombre}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#6b7280', fontWeight: 600, marginBottom: '1rem' }}>
+                  {etapaInfo.objetivo}
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  {misionesDeEtapaActual.map((m) => (
+                    <MisionCard
+                      key={m.id}
+                      mision={m}
+                      completada={misionesCompletadas.includes(m.id)}
+                      onCompletar={() => completarConToast(m.id, m.puntos, m.mensajeCompletado)}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="progreso-desktop" style={{ marginTop: '1.5rem' }}>
-            <ProgresoBar completadas={completadasCount} total={totalMisiones} semana={semanaVisual} />
+            <ProgresoBar completadas={completadasTotales} total={totalMisiones} etapa={etapaActual} nombreEtapa={etapaInfo.nombre} />
           </div>
         </div>
       </div>
+
+      {/* ── Toast ── */}
+      <AnimatePresence>
+        {toast && (
+          <motion.div
+            initial={{ opacity: 0, y: 24, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 24, scale: 0.95 }}
+            transition={{ duration: 0.25, ease: 'easeOut' }}
+            style={{
+              position: 'fixed',
+              bottom: '2rem',
+              left: '50%',
+              transform: 'translateX(-50%)',
+              background: 'linear-gradient(135deg, #22a55b 0%, #0ea5e9 100%)',
+              color: '#fff',
+              padding: '0.9rem 1.6rem',
+              borderRadius: '999px',
+              boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
+              fontWeight: 800,
+              fontSize: '0.95rem',
+              zIndex: 100,
+              maxWidth: '90vw',
+              textAlign: 'center',
+            }}
+            role="status"
+            aria-live="polite"
+          >
+            {toast}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
@@ -332,11 +448,11 @@ function HeroCard({ label, titulo, descripcion }: { label: string; titulo: strin
   );
 }
 
-function debugBtn(isReset = false, isAccent = false): React.CSSProperties {
+function debugBtn(isReset = false): React.CSSProperties {
   return {
     background: '#f3f4f6',
-    border: `2px dashed ${isReset ? '#fca5a5' : isAccent ? '#93c5fd' : '#d1d5db'}`,
-    color: isReset ? '#ef4444' : isAccent ? '#1d4ed8' : '#6b7280',
+    border: `2px dashed ${isReset ? '#fca5a5' : '#d1d5db'}`,
+    color: isReset ? '#ef4444' : '#6b7280',
     fontFamily: "'Nunito', sans-serif",
     fontWeight: 700,
     fontSize: '0.8rem',
@@ -346,13 +462,97 @@ function debugBtn(isReset = false, isAccent = false): React.CSSProperties {
   };
 }
 
-function ProgresoBar({ completadas, total, semana }: { completadas: number; total: number; semana: number }) {
+function CelebracionMisiones({
+  etapa,
+  mensaje,
+  esUltima,
+  onContinuar,
+}: {
+  etapa: number;
+  mensaje: string;
+  esUltima: boolean;
+  onContinuar: () => void;
+}) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.94, y: 10 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.96, y: -8 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      style={{
+        background: '#fff',
+        border: '3px solid #fde68a',
+        borderRadius: '24px',
+        padding: '2.25rem 1.5rem',
+        textAlign: 'center',
+        boxShadow: '0 10px 30px rgba(245, 158, 11, 0.15)',
+      }}
+    >
+      <motion.div
+        initial={{ scale: 0, rotate: -30 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ delay: 0.15, type: 'spring', stiffness: 200, damping: 14 }}
+        style={{ fontSize: '4rem', lineHeight: 1, marginBottom: '0.5rem' }}
+      >
+        🎉
+      </motion.div>
+
+      <div
+        style={{
+          fontSize: '0.72rem',
+          fontWeight: 900,
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+          color: '#b45309',
+          marginBottom: '0.75rem',
+        }}
+      >
+        Etapa {etapa} completada
+      </div>
+
+      <div
+        style={{
+          fontSize: 'clamp(1.15rem, 3.6vw, 1.45rem)',
+          fontWeight: 900,
+          lineHeight: 1.3,
+          color: '#111827',
+          marginBottom: '1.5rem',
+          padding: '0 0.5rem',
+        }}
+      >
+        {mensaje}
+      </div>
+
+      <motion.button
+        whileTap={{ scale: 0.96 }}
+        whileHover={{ scale: 1.03 }}
+        onClick={onContinuar}
+        style={{
+          background: 'linear-gradient(135deg, #22a55b 0%, #0ea5e9 100%)',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '999px',
+          padding: '0.85rem 2.25rem',
+          fontFamily: "'Nunito', sans-serif",
+          fontWeight: 900,
+          fontSize: '1rem',
+          cursor: 'pointer',
+          boxShadow: '0 8px 20px rgba(34, 165, 91, 0.3)',
+        }}
+      >
+        {esUltima ? '🏁 Ver final' : 'Continuar →'}
+      </motion.button>
+    </motion.div>
+  );
+}
+
+function ProgresoBar({ completadas, total, etapa, nombreEtapa }: { completadas: number; total: number; etapa: number; nombreEtapa: string }) {
   const pct = Math.round((completadas / total) * 100);
   return (
     <div style={{ background: '#fff', border: '2px solid #e5e7eb', borderRadius: '16px', padding: '0.85rem 1rem' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
         <span style={{ fontWeight: 800, fontSize: '0.82rem', color: '#374151' }}>Progreso total</span>
-        <span style={{ fontWeight: 700, fontSize: '0.78rem', color: '#6b7280' }}>Semana {semana} · {completadas}/{total} misiones</span>
+        <span style={{ fontWeight: 700, fontSize: '0.78rem', color: '#6b7280' }}>Etapa {etapa} · {nombreEtapa} · {completadas}/{total}</span>
       </div>
       <div style={{ background: '#f3f4f6', borderRadius: '999px', height: '10px', overflow: 'hidden' }}>
         <motion.div

@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(npx tsc *)",
+      "Bash(mkdir -p docs)",
+      "Bash(mv public/docs/nuevas_misiones_web.md docs/)",
+      "Bash(rmdir public/docs)"
     ]
   }
 }

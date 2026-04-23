@@ -87,9 +87,20 @@ const steps = [
     cursor: default;
   }
 
-  .step-card:hover {
-    transform: translateX(5px);
-    box-shadow: -4px 4px 0px var(--accent);
+  @media (any-hover: hover) {
+    .step-card:hover {
+      transform: translateX(5px);
+      box-shadow: -4px 4px 0px var(--accent);
+    }
+  }
+
+  /* En táctil puro: efecto mientras se presiona o cuando queda seleccionado */
+  @media (any-hover: none) {
+    .step-card:active,
+    .step-card.is-selected {
+      transform: translateX(5px);
+      box-shadow: -4px 4px 0px var(--accent);
+    }
   }
 
   .step-number {
@@ -117,6 +128,7 @@ const steps = [
     display: flex;
     flex-direction: column;
     gap: 0.1rem;
+    text-align: left;
   }
 
   .step-name {
@@ -134,3 +146,14 @@ const steps = [
     color: #6b7280;
   }
 </style>
+
+<script>
+  const stepCards = document.querySelectorAll<HTMLElement>('.step-card');
+  document.addEventListener('pointerdown', (e) => {
+    const card = (e.target as Element | null)?.closest('.step-card');
+    stepCards.forEach((c) => {
+      if (c === card) c.classList.add('is-selected');
+      else c.classList.remove('is-selected');
+    });
+  });
+</script>

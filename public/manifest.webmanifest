@@ -1,0 +1,20 @@
+{
+  "name": "Club de Exploradores · Print Craft",
+  "short_name": "Club Exploradores",
+  "description": "Aprende jugando con el Puzzle Animales Ecuador de Print Craft. Completa misiones, gana puntos y descubre la fauna ecuatoriana.",
+  "lang": "es-EC",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#eef3fb",
+  "theme_color": "#22a55b",
+  "icons": [
+    {
+      "src": "/images/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

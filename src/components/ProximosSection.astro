@@ -1,13 +1,13 @@
 ---
 ---
 
-<section class="proximos-section">
+<section id="proximos" class="proximos-section">
   <div class="proximos-inner">
 
     <div class="section-label">SECCIÓN 3</div>
     <h2 class="section-title">Próximos descubrimientos</h2>
     <p class="section-subtitle">
-      Aquí se siembra expectativa. No hace falta tener el nuevo producto listo: basta con mostrar que hay más aventura por venir.
+      Más aventuras están en camino. Nuevos animales, nuevas misiones y sorpresas que harán crecer la tribu de pequeños exploradores.
     </p>
 
     <div class="cards-grid">
@@ -136,33 +136,69 @@
     transition: opacity 0.22s ease;
   }
 
-  .prox-card:hover {
-    transform: translateY(-5px);
-    /* Box shadow verde como en el diseño de referencia */
-    box-shadow:
-      0 0 0 2px #22a55b,
-      0 12px 32px rgba(34, 165, 91, 0.2);
-    border-color: #22a55b;
-    /* Fondo verde muy suave — solo una tinta, sin capa encima */
-    background: #f0fdf4;
+  @media (any-hover: hover) {
+    .prox-card:hover {
+      transform: translateY(-5px);
+      /* Box shadow verde como en el diseño de referencia */
+      box-shadow:
+        0 0 0 2px #22a55b,
+        0 12px 32px rgba(34, 165, 91, 0.2);
+      border-color: #22a55b;
+      /* Fondo verde muy suave — solo una tinta, sin capa encima */
+      background: #f0fdf4;
+    }
+
+    .prox-card:hover::after {
+      opacity: 1;
+    }
+
+    /* Texto oscurece en hover para mantener contraste sobre el fondo verde */
+    .prox-card:hover .card-title {
+      color: #064e28;
+    }
+
+    .prox-card:hover .card-desc {
+      color: #1f4a2e;
+    }
+
+    .prox-card:hover .card-tag {
+      background: #bbf7d0;
+      color: #065f46;
+    }
   }
 
-  .prox-card:hover::after {
-    opacity: 1;
-  }
+  /* En táctil puro: efecto mientras se presiona o cuando queda seleccionada */
+  @media (any-hover: none) {
+    .prox-card:active,
+    .prox-card.is-selected {
+      transform: translateY(-5px);
+      box-shadow:
+        0 0 0 2px #22a55b,
+        0 12px 32px rgba(34, 165, 91, 0.2);
+      border-color: #22a55b;
+      background: #f0fdf4;
+    }
 
-  /* Texto oscurece en hover para mantener contraste sobre el fondo verde */
-  .prox-card:hover .card-title {
-    color: #064e28;
-  }
+    .prox-card:active::after,
+    .prox-card.is-selected::after {
+      opacity: 1;
+    }
 
-  .prox-card:hover .card-desc {
-    color: #1f4a2e;
-  }
+    .prox-card:active .card-title,
+    .prox-card.is-selected .card-title {
+      color: #064e28;
+    }
 
-  .prox-card:hover .card-tag {
-    background: #bbf7d0;
-    color: #065f46;
+    .prox-card:active .card-desc,
+    .prox-card.is-selected .card-desc {
+      color: #1f4a2e;
+    }
+
+    .prox-card:active .card-tag,
+    .prox-card.is-selected .card-tag {
+      background: #bbf7d0;
+      color: #065f46;
+    }
   }
 
   .card-emoji {
@@ -213,3 +249,14 @@
     }
   }
 </style>
+
+<script>
+  const proxCards = document.querySelectorAll<HTMLElement>('.prox-card');
+  document.addEventListener('pointerdown', (e) => {
+    const card = (e.target as Element | null)?.closest('.prox-card');
+    proxCards.forEach((c) => {
+      if (c === card) c.classList.add('is-selected');
+      else c.classList.remove('is-selected');
+    });
+  });
+</script>

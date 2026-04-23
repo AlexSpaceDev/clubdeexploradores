@@ -1,0 +1,555 @@
+---
+const navItems = [
+  { href: '#inicio', label: 'Inicio', emoji: '🏠' },
+  { href: '#animales', label: 'Animales', emoji: '🦎' },
+  { href: '#misiones', label: 'Misiones', emoji: '🎯' },
+  { href: '#proximos', label: 'Próximamente', emoji: '✨' },
+];
+---
+
+<header class="site-header" data-header>
+  <div class="header-inner">
+
+    {/* Logo → inicio */}
+    <a href="#inicio" class="header-logo" aria-label="Ir al inicio">
+      <img src="/images/logo-horizontal.png" alt="Club de Exploradores" />
+    </a>
+
+    {/* Nav desktop */}
+    <nav class="header-nav" aria-label="Navegación principal">
+      <ul>
+        {navItems.map((item) => (
+          <li>
+            <a href={item.href} data-nav-link>{item.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+
+    {/* Grupo derecho: mute + burger */}
+    <div class="header-actions">
+      <button
+        class="header-mute"
+        type="button"
+        aria-label="Silenciar sonidos"
+        aria-pressed="false"
+        data-mute
+      >
+        <span class="mute-icon" data-mute-icon aria-hidden="true">🔊</span>
+      </button>
+
+      {/* Botón hamburguesa (mobile) */}
+      <button
+        class="header-burger"
+        type="button"
+        aria-label="Abrir menú"
+        aria-expanded="false"
+        aria-controls="mobile-sidebar"
+        data-burger
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>
+
+{/* Sidebar mobile — fuera del <header> para que position:fixed use el viewport
+   (el backdrop-filter del header crea un containing block y rompe el fixed) */}
+<div class="sidebar-overlay" data-overlay aria-hidden="true"></div>
+
+<aside
+  id="mobile-sidebar"
+  class="mobile-sidebar"
+  aria-label="Menú de navegación"
+  aria-hidden="true"
+  data-sidebar
+>
+  <div class="sidebar-head">
+    <span class="sidebar-title">
+      <span class="sidebar-dot"></span>
+      Menú
+    </span>
+    <button
+      class="sidebar-close"
+      type="button"
+      aria-label="Cerrar menú"
+      data-close
+    >
+      ✕
+    </button>
+  </div>
+
+  <nav class="sidebar-nav" aria-label="Navegación móvil">
+    <ul>
+      {navItems.map((item) => (
+        <li>
+          <a href={item.href} data-sidebar-link>
+            <span class="sidebar-emoji">{item.emoji}</span>
+            <span>{item.label}</span>
+            <span class="sidebar-arrow">→</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+
+  <div class="sidebar-foot">
+    <span>🦎 Club de Exploradores</span>
+    <span class="sidebar-brand">Print Craft</span>
+  </div>
+</aside>
+
+<script>
+  import { isMuted, toggleMuted, subscribeMuted, playSound } from '../lib/sounds';
+
+  const header = document.querySelector<HTMLElement>('[data-header]');
+  const burger = document.querySelector<HTMLButtonElement>('[data-burger]');
+  const sidebar = document.querySelector<HTMLElement>('[data-sidebar]');
+  const overlay = document.querySelector<HTMLElement>('[data-overlay]');
+  const closeBtn = document.querySelector<HTMLButtonElement>('[data-close]');
+  const sidebarLinks = document.querySelectorAll<HTMLAnchorElement>('[data-sidebar-link]');
+  const navLinks = document.querySelectorAll<HTMLAnchorElement>('[data-nav-link]');
+  const muteBtn = document.querySelector<HTMLButtonElement>('[data-mute]');
+  const muteIcon = document.querySelector<HTMLElement>('[data-mute-icon]');
+
+  // ── Mute toggle ───────────────────────────────────────────────────────
+  function renderMute(muted: boolean) {
+    if (muteIcon) muteIcon.textContent = muted ? '🔇' : '🔊';
+    if (muteBtn) {
+      muteBtn.setAttribute('aria-pressed', muted ? 'true' : 'false');
+      muteBtn.setAttribute(
+        'aria-label',
+        muted ? 'Activar sonidos' : 'Silenciar sonidos'
+      );
+      muteBtn.classList.toggle('is-muted', muted);
+    }
+  }
+
+  renderMute(isMuted());
+  subscribeMuted(renderMute);
+  muteBtn?.addEventListener('click', () => {
+    // Al silenciar: suena el press-button antes de muter.
+    // Al re-activar: no suena (el usuario acaba de pedir silencio previamente
+    // y no hace falta anunciar el retorno con audio).
+    if (!isMuted()) playSound('press-button');
+    toggleMuted();
+  });
+
+  // ── Sonido en controles de navegación ─────────────────────────────────
+  const logoLink = document.querySelector<HTMLAnchorElement>('.header-logo');
+  [...navLinks, ...sidebarLinks].forEach((a) =>
+    a.addEventListener('click', () => playSound('press-button'))
+  );
+  logoLink?.addEventListener('click', () => playSound('press-button'));
+  burger?.addEventListener('click', () => playSound('press-button'));
+  closeBtn?.addEventListener('click', () => playSound('press-button'));
+
+  // ── Sidebar open/close ────────────────────────────────────────────────
+  function openSidebar() {
+    sidebar?.classList.add('open');
+    overlay?.classList.add('open');
+    burger?.classList.add('open');
+    burger?.setAttribute('aria-expanded', 'true');
+    sidebar?.setAttribute('aria-hidden', 'false');
+    overlay?.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeSidebar() {
+    sidebar?.classList.remove('open');
+    overlay?.classList.remove('open');
+    burger?.classList.remove('open');
+    burger?.setAttribute('aria-expanded', 'false');
+    sidebar?.setAttribute('aria-hidden', 'true');
+    overlay?.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  burger?.addEventListener('click', () => {
+    if (sidebar?.classList.contains('open')) closeSidebar();
+    else openSidebar();
+  });
+
+  closeBtn?.addEventListener('click', closeSidebar);
+  overlay?.addEventListener('click', closeSidebar);
+  sidebarLinks.forEach((link) => link.addEventListener('click', closeSidebar));
+
+  // Cierra con tecla Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && sidebar?.classList.contains('open')) closeSidebar();
+  });
+
+  // ── Sombra del header al hacer scroll ──────────────────────────────────
+  function updateScrolled() {
+    if (!header) return;
+    if (window.scrollY > 8) header.classList.add('scrolled');
+    else header.classList.remove('scrolled');
+  }
+  updateScrolled();
+  window.addEventListener('scroll', updateScrolled, { passive: true });
+
+  // ── Link activo según sección visible (IntersectionObserver) ───────────
+  const sections = ['inicio', 'animales', 'misiones', 'proximos']
+    .map((id) => document.getElementById(id))
+    .filter((el): el is HTMLElement => el !== null);
+
+  const setActive = (id: string) => {
+    navLinks.forEach((a) => {
+      const target = a.getAttribute('href')?.slice(1);
+      a.classList.toggle('active', target === id);
+    });
+    sidebarLinks.forEach((a) => {
+      const target = a.getAttribute('href')?.slice(1);
+      a.classList.toggle('active', target === id);
+    });
+  };
+
+  if (sections.length > 0) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // Escoge la sección más visible
+        const visible = entries
+          .filter((e) => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+        if (visible) setActive(visible.target.id);
+      },
+      { rootMargin: '-35% 0px -55% 0px', threshold: [0, 0.25, 0.5, 0.75, 1] }
+    );
+    sections.forEach((s) => observer.observe(s));
+  }
+</script>
+
+<style>
+  /* ── HEADER ───────────────────────────────────────────────────────────── */
+  .site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: saturate(1.4) blur(10px);
+    -webkit-backdrop-filter: saturate(1.4) blur(10px);
+    border-bottom: 1px solid transparent;
+    transition: box-shadow 0.25s ease, border-color 0.25s ease, background 0.25s ease;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .site-header.scrolled {
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: 0 2px 14px rgba(17, 24, 39, 0.06);
+    border-color: #eef2f7;
+  }
+
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.6rem 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  /* ── LOGO ─────────────────────────────────────────────────────────────── */
+  .header-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    text-decoration: none;
+    border-radius: 12px;
+    padding: 0.25rem 0.4rem;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+
+  .header-logo:hover {
+    background: #f0faf4;
+    transform: translateY(-1px);
+  }
+
+  .header-logo img {
+    height: 38px;
+    width: auto;
+    display: block;
+  }
+
+  /* ── NAV DESKTOP ──────────────────────────────────────────────────────── */
+  .header-nav ul {
+    display: flex;
+    list-style: none;
+    gap: 0.35rem;
+    margin: 0;
+    padding: 0;
+  }
+
+  .header-nav a {
+    position: relative;
+    display: inline-block;
+    padding: 0.55rem 0.95rem;
+    color: #374151;
+    font-size: 0.92rem;
+    font-weight: 800;
+    text-decoration: none;
+    border-radius: 999px;
+    transition: color 0.2s ease, background 0.2s ease;
+  }
+
+  .header-nav a:hover {
+    color: #15803d;
+    background: #ecfdf5;
+  }
+
+  .header-nav a.active {
+    color: #15803d;
+    background: #d1fae5;
+  }
+
+  .header-nav a.active::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: -4px;
+    width: 6px;
+    height: 6px;
+    background: #22a55b;
+    border-radius: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* ── ACCIONES (mute + burger) ─────────────────────────────────────────── */
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* ── MUTE ─────────────────────────────────────────────────────────────── */
+  .header-mute {
+    background: #f3f4f6;
+    border: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.15rem;
+    line-height: 1;
+    transition: background 0.2s ease, transform 0.15s ease;
+    padding: 0;
+  }
+
+  .header-mute:hover { background: #e5e7eb; }
+  .header-mute:active { transform: scale(0.93); }
+
+  .header-mute.is-muted {
+    background: #fee2e2;
+  }
+  .header-mute.is-muted:hover { background: #fecaca; }
+
+  /* ── BURGER ───────────────────────────────────────────────────────────── */
+  .header-burger {
+    display: none;
+    background: #f3f4f6;
+    border: none;
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+    cursor: pointer;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    transition: background 0.2s ease;
+    padding: 0;
+  }
+
+  .header-burger:hover { background: #e5e7eb; }
+  .header-burger:active { transform: scale(0.95); }
+
+  .header-burger span {
+    display: block;
+    width: 20px;
+    height: 2.5px;
+    background: #111827;
+    border-radius: 2px;
+    transition: transform 0.3s ease, opacity 0.2s ease;
+    transform-origin: center;
+  }
+
+  .header-burger.open span:nth-child(1) {
+    transform: translateY(7.5px) rotate(45deg);
+  }
+  .header-burger.open span:nth-child(2) {
+    opacity: 0;
+  }
+  .header-burger.open span:nth-child(3) {
+    transform: translateY(-7.5px) rotate(-45deg);
+  }
+
+  /* ── SIDEBAR MOBILE ──────────────────────────────────────────────────── */
+  .sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.5);
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 60;
+  }
+
+  .sidebar-overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .mobile-sidebar {
+    position: fixed;
+    top: 0;
+    right: 0;
+    height: 100dvh;
+    width: min(85vw, 320px);
+    background: #ffffff;
+    box-shadow: -8px 0 32px rgba(17, 24, 39, 0.18);
+    transform: translateX(100%);
+    transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 70;
+    display: flex;
+    flex-direction: column;
+    padding: 1rem 1rem 1.25rem;
+  }
+
+  .mobile-sidebar.open { transform: translateX(0); }
+
+  .sidebar-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.25rem 0.25rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+    margin-bottom: 0.75rem;
+  }
+
+  .sidebar-title {
+    font-size: 1rem;
+    font-weight: 900;
+    color: #111827;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    letter-spacing: -0.01em;
+  }
+
+  .sidebar-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #22a55b;
+    box-shadow: 0 0 0 4px #dcfce7;
+  }
+
+  .sidebar-close {
+    background: #f3f4f6;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 800;
+    color: #6b7280;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+  }
+
+  .sidebar-close:hover {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+
+  .sidebar-nav {
+    flex: 1;
+  }
+
+  .sidebar-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+  }
+
+  .sidebar-nav a {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 0.85rem 0.9rem;
+    color: #111827;
+    font-size: 1rem;
+    font-weight: 800;
+    text-decoration: none;
+    border-radius: 14px;
+    background: #f9fafb;
+    border: 2px solid transparent;
+    transition: background 0.2s ease, transform 0.15s ease, border-color 0.2s ease, color 0.2s ease;
+  }
+
+  .sidebar-nav a:hover,
+  .sidebar-nav a:active {
+    background: #ecfdf5;
+    border-color: #bbf7d0;
+    color: #15803d;
+  }
+
+  .sidebar-nav a.active {
+    background: #d1fae5;
+    border-color: #86efac;
+    color: #15803d;
+  }
+
+  .sidebar-nav a.active .sidebar-arrow {
+    transform: translateX(4px);
+    color: #22a55b;
+  }
+
+  .sidebar-emoji {
+    font-size: 1.35rem;
+    line-height: 1;
+    flex-shrink: 0;
+  }
+
+  .sidebar-arrow {
+    margin-left: auto;
+    color: #9ca3af;
+    font-weight: 900;
+    transition: transform 0.2s ease, color 0.2s ease;
+  }
+
+  .sidebar-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.85rem 0.25rem 0;
+    margin-top: 0.5rem;
+    border-top: 1px solid #f3f4f6;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #9ca3af;
+  }
+
+  .sidebar-brand {
+    color: #22a55b;
+    font-weight: 900;
+    letter-spacing: 0.02em;
+  }
+
+  /* ── RESPONSIVE ──────────────────────────────────────────────────────── */
+  @media (max-width: 768px) {
+    .header-nav { display: none; }
+    .header-burger { display: flex; }
+    .header-inner { padding: 0.55rem 1rem; }
+    .header-logo img { height: 34px; }
+  }
+</style>

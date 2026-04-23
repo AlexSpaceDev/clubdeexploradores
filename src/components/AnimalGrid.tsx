@@ -1,32 +1,48 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { animals } from '../data/animals';
 import { useExplorerStore } from '../store/explorerStore';
 import { useDebugMode } from '../utils/useDebugMode';
 import AnimalCard from './AnimalCard';
 import AnimalVisor from './AnimalVisor';
+import DiscoveryModal from './DiscoveryModal';
 
 export default function AnimalGrid() {
-  const { points, animals: animalStates, initAnimals, addPoints, resetAll } = useExplorerStore();
+  const {
+    points,
+    animals: animalStates,
+    initAnimals,
+    addPoints,
+    resetAll,
+    recienDescubierto,
+    cerrarDescubrimiento,
+  } = useExplorerStore();
   const debug = useDebugMode();
-  const [activeId, setActiveId] = useState<string>(animals[0].id);
+
+  // Solo los animales desbloqueables entran al store — los "proximamente" son teaser visual.
+  const desbloqueables = useMemo(() => animals.filter((a) => !a.proximamente), []);
+
+  const [activeId, setActiveId] = useState<string>(desbloqueables[0].id);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    initAnimals(animals.map((a) => a.id));
+    initAnimals(desbloqueables.map((a) => a.id));
     setReady(true);
-  }, []);
+  }, [initAnimals, desbloqueables]);
 
-  // 👇 Este useEffect adicional re-inicializa tras un reset
+  // Re-inicializa tras un reset
   useEffect(() => {
     if (ready && animalStates.length === 0) {
-        initAnimals(animals.map((a) => a.id));
+      initAnimals(desbloqueables.map((a) => a.id));
     }
-  }, [animalStates.length, ready]);
+  }, [animalStates.length, ready, initAnimals, desbloqueables]);
 
   const unlockedCount = animalStates.filter((a) => a.status === 'unlocked').length;
   const activeAnimal = animals.find((a) => a.id === activeId)!;
   const activeState = animalStates.find((a) => a.id === activeId);
   const activeStatus = activeState?.status ?? 'locked';
+  const animalDescubierto = recienDescubierto
+    ? animals.find((a) => a.id === recienDescubierto) ?? null
+    : null;
 
   if (!ready) return null;
 
@@ -40,7 +56,7 @@ export default function AnimalGrid() {
           <span>{points} puntos</span>
         </div>
         <div className="unlocked-badge">
-          🦎 {unlockedCount} de {animals.length} descubiertos
+          🦎 {unlockedCount} de {desbloqueables.length} descubiertos
         </div>
         {debug && (
           <div className="test-buttons">
@@ -85,6 +101,8 @@ export default function AnimalGrid() {
         </div>
 
       </div>
+
+      <DiscoveryModal animal={animalDescubierto} onClose={cerrarDescubrimiento} />
     </div>
   );
 }
