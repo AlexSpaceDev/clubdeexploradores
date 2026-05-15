@@ -89,6 +89,54 @@ import AnimalGrid from './AnimalGrid';
     border-radius: 999px;
   }
 
+  :global(.region-chip) {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: #ecfdf5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+    font-weight: 800;
+    font-size: 0.78rem;
+    padding: 0.3rem 0.7rem;
+    border-radius: 999px;
+  }
+
+  /* ── BANNER: sin regiones desbloqueadas ── */
+  :global(.region-empty-banner) {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border: 2px dashed #fbbf24;
+    border-radius: 16px;
+    padding: 0.9rem 1.1rem;
+  }
+
+  :global(.region-empty-icon) {
+    font-size: 1.8rem;
+    line-height: 1;
+  }
+
+  :global(.region-empty-text) {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  :global(.region-empty-text strong) {
+    font-size: 0.95rem;
+    font-weight: 900;
+    color: #92400e;
+  }
+
+  :global(.region-empty-text span) {
+    font-size: 0.82rem;
+    color: #78350f;
+    font-weight: 600;
+    line-height: 1.45;
+  }
+
   :global(.test-buttons) {
     display: flex;
     gap: 0.5rem;
@@ -305,6 +353,16 @@ import AnimalGrid from './AnimalGrid';
   :global(.animal-card.locked.can-unlock) {
     border-color: #22c55e;
     background: #f0fdf4;
+  }
+
+  /* Bloqueo regional: capa exterior — más oscuro y serio para que se
+     perciba claramente como "no disponible aún" vs. el bloqueo por puntos. */
+  :global(.animal-card.region-locked) {
+    background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
+    border: 2px solid #374151;
+    color: #f1f5f9;
+    justify-content: center;
+    box-shadow: inset 0 0 40px rgba(0,0,0,0.45);
   }
 
   :global(.card-emoji) {

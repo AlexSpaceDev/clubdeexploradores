@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
+import { animals, type Region } from '../data/animals';
 import { misiones } from '../data/missions';
 
 export type AnimalStatus = 'locked' | 'unlocking' | 'unlocked';
@@ -54,6 +55,9 @@ export function etapaPendienteDeCelebrar(
 interface ExplorerStore {
   points: number;
   animals: AnimalState[];
+  // Regiones que el usuario ha desbloqueado escaneando el QR del puzzle físico.
+  // Es aditivo: escanear el segundo QR no reemplaza al primero.
+  regionesDesbloqueadas: Region[];
   misionesCompletadas: string[];
   // Timestamp (epoch ms) por misión completada. Paralelo a misionesCompletadas
   // para preservar la API de .includes() sin romper consumidores.
@@ -68,6 +72,7 @@ interface ExplorerStore {
   initAnimals: (ids: string[]) => void;
   unlockAnimal: (id: string, cost: number) => void;
   setUnlocked: (id: string) => void;
+  desbloquearRegion: (region: Region) => void;
   cerrarDescubrimiento: () => void;
 
   completarMision: (id: string, puntos: number) => void;
@@ -81,6 +86,7 @@ export const useExplorerStore = create<ExplorerStore>()(
     (set, get) => ({
       points: 0,
       animals: [],
+      regionesDesbloqueadas: [],
       misionesCompletadas: [],
       misionesCompletadasEn: {},
       etapasConfirmadas: [],
@@ -99,9 +105,14 @@ export const useExplorerStore = create<ExplorerStore>()(
       },
 
       unlockAnimal: (id, cost) => {
-        const { points, animals } = get();
-        const animal = animals.find((a) => a.id === id);
-        if (!animal || animal.status !== 'locked' || points < cost) return;
+        const { points, animals: estados, regionesDesbloqueadas } = get();
+        const estado = estados.find((a) => a.id === id);
+        if (!estado || estado.status !== 'locked' || points < cost) return;
+        // Segunda capa: la región del animal debe estar desbloqueada por QR.
+        // La UI ya bloquea el click en este caso, pero validamos aquí también
+        // como defensa en profundidad.
+        const def = animals.find((a) => a.id === id);
+        if (def?.region && !regionesDesbloqueadas.includes(def.region)) return;
         set((s) => ({
           points: s.points - cost,
           animals: s.animals.map((a) =>
@@ -109,6 +120,13 @@ export const useExplorerStore = create<ExplorerStore>()(
           ),
         }));
       },
+
+      desbloquearRegion: (region) =>
+        set((s) =>
+          s.regionesDesbloqueadas.includes(region)
+            ? s
+            : { regionesDesbloqueadas: [...s.regionesDesbloqueadas, region] }
+        ),
 
       setUnlocked: (id) =>
         set((s) => {
@@ -157,6 +175,7 @@ export const useExplorerStore = create<ExplorerStore>()(
         set(() => ({
           points: 0,
           animals: [],
+          regionesDesbloqueadas: [],
           misionesCompletadas: [],
           misionesCompletadasEn: {},
           etapasConfirmadas: [],
@@ -174,7 +193,8 @@ export const useExplorerStore = create<ExplorerStore>()(
       // v2: refactor a sistema secuencial de etapas (sin tiempo real)
       // v3: timestamps para analítica futura (unlockedAt, misionesCompletadasEn)
       // v4: etapasConfirmadas — usuario debe dar "Continuar" tras cada etapa
-      version: 4,
+      // v5: regionesDesbloqueadas — gating por QR del puzzle físico
+      version: 5,
       migrate: (persisted, version) => {
         let s = (persisted ?? {}) as Partial<ExplorerStore>;
         if (version < 3) {
@@ -193,6 +213,19 @@ export const useExplorerStore = create<ExplorerStore>()(
             }
           }
           s = { ...s, etapasConfirmadas: s.etapasConfirmadas ?? confirmadas };
+        }
+        if (version < 5) {
+          // Si el usuario ya tenía animales desbloqueados en versiones previas
+          // (cuando aún no existía el gating por QR), inferimos sus regiones a
+          // partir de esos animales para no quitarles progreso.
+          const estados = (s.animals ?? []) as AnimalState[];
+          const regiones = new Set<Region>(s.regionesDesbloqueadas ?? []);
+          for (const est of estados) {
+            if (est.status !== 'unlocked') continue;
+            const def = animals.find((a) => a.id === est.id);
+            if (def?.region) regiones.add(def.region);
+          }
+          s = { ...s, regionesDesbloqueadas: Array.from(regiones) };
         }
         return s as ExplorerStore;
       },

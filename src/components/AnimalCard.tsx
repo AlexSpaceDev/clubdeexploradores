@@ -1,6 +1,7 @@
 import { motion } from 'framer-motion';
 import { useEffect, useState } from 'react';
 import type { Animal } from '../data/animals';
+import { REGIONES } from '../data/animals';
 import type { AnimalStatus } from '../store/explorerStore';
 import { useExplorerStore } from '../store/explorerStore';
 import { playSound } from '../lib/sounds';
@@ -10,16 +11,28 @@ interface Props {
   status: AnimalStatus;
   points: number;
   isActive: boolean;
+  /** El animal está bloqueado porque su región (puzzle físico) aún no
+   *  ha sido desbloqueada vía QR. Esta es la capa exterior del bloqueo;
+   *  recién se levanta, el bloqueo normal por puntos toma su lugar. */
+  regionLocked: boolean;
   onClick: () => void;
 }
 
-export default function AnimalCard({ animal, status, points, isActive, onClick }: Props) {
+export default function AnimalCard({
+  animal,
+  status,
+  points,
+  isActive,
+  regionLocked,
+  onClick,
+}: Props) {
   const { unlockAnimal, setUnlocked } = useExplorerStore();
   const [shake, setShake] = useState(false);
 
   const canUnlock = points >= animal.costo;
   const esEspecial = !!animal.especial;
   const esProximamente = !!animal.proximamente;
+  const regionInfo = animal.region ? REGIONES[animal.region] : null;
 
   useEffect(() => {
     if (status === 'unlocking') {
@@ -30,19 +43,30 @@ export default function AnimalCard({ animal, status, points, isActive, onClick }
     }
   }, [status, animal.id, setUnlocked]);
 
+  const triggerShake = () => {
+    setShake(true);
+    playSound('lock');
+    setTimeout(() => setShake(false), 600);
+  };
+
   const handleClick = () => {
     onClick(); // siempre activa el visor
 
     if (esProximamente) return; // no intenta desbloquear
+
+    // Bloqueo regional: ni intenta desbloquear ni descuenta puntos.
+    // Solo feedback visual + sonoro para indicar que está bloqueado.
+    if (regionLocked && status === 'locked') {
+      triggerShake();
+      return;
+    }
 
     if (status === 'locked') {
       if (canUnlock) {
         unlockAnimal(animal.id, animal.costo);
         playSound(esEspecial ? 'desbloqueo-especial' : 'desbloqueo-normal');
       } else {
-        setShake(true);
-        playSound('lock');
-        setTimeout(() => setShake(false), 600);
+        triggerShake();
       }
     }
   };
@@ -147,8 +171,59 @@ export default function AnimalCard({ animal, status, points, isActive, onClick }
         </motion.div>
       )}
 
+      {/* ── REGION LOCKED ── (capa exterior: no se compró el puzzle) */}
+      {!esProximamente && status === 'locked' && regionLocked && regionInfo && (
+        <motion.div
+          className="animal-card region-locked"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.97 }}
+        >
+          <div style={{ position: 'relative', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div
+              className="card-emoji"
+              style={{ filter: 'grayscale(1) blur(5px) opacity(0.18)' }}
+            >
+              {animal.emoji}
+            </div>
+            <span style={{
+              position: 'absolute',
+              fontSize: '2.2rem',
+              lineHeight: 1,
+              filter: 'drop-shadow(0 2px 6px rgba(0,0,0,0.5))',
+            }}>🔐</span>
+          </div>
+
+          <div className="card-cost" style={{ marginTop: '0.6rem' }}>
+            <span style={{
+              fontSize: '0.68rem',
+              fontWeight: 800,
+              color: '#cbd5e1',
+              letterSpacing: '0.06em',
+              textTransform: 'uppercase',
+            }}>
+              Disponible con
+            </span>
+            <span style={{
+              background: 'rgba(255,255,255,0.08)',
+              color: '#f8fafc',
+              border: '1px solid rgba(255,255,255,0.18)',
+              fontSize: '0.75rem',
+              fontWeight: 800,
+              padding: '0.3rem 0.7rem',
+              borderRadius: '999px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+            }}>
+              <span aria-hidden>{regionInfo.emoji}</span>
+              {regionInfo.puzzle}
+            </span>
+          </div>
+        </motion.div>
+      )}
+
       {/* ── LOCKED ── */}
-      {!esProximamente && status === 'locked' && (
+      {!esProximamente && status === 'locked' && !regionLocked && (
         <motion.div
           className={`animal-card locked ${canUnlock ? 'can-unlock' : ''}`}
           whileHover={{ scale: 1.02 }}

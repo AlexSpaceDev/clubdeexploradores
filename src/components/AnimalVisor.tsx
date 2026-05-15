@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { useEffect, useRef, useState } from 'react';
 import type { Animal } from '../data/animals';
+import { REGIONES } from '../data/animals';
 import type { AnimalStatus } from '../store/explorerStore';
 import ImageLightbox from './ImageLightbox';
 
@@ -8,15 +9,19 @@ interface Props {
   animal: Animal;
   status: AnimalStatus;
   points: number;
+  /** El animal está bloqueado porque su región (puzzle físico) aún no
+   *  ha sido desbloqueada vía QR. */
+  regionLocked: boolean;
 }
 
 const CAROUSEL_INTERVAL = 3500;
 const CELEBRATION_MS = 1600;
 
-export default function AnimalVisor({ animal, status, points }: Props) {
+export default function AnimalVisor({ animal, status, points, regionLocked }: Props) {
   const canUnlock = points >= animal.costo;
   const esEspecial = !!animal.especial;
   const esProximamente = !!animal.proximamente;
+  const regionInfo = animal.region ? REGIONES[animal.region] : null;
 
   const imagenes = animal.imagenes ?? [];
   const tieneImagenes = status === 'unlocked' && imagenes.length > 0;
@@ -374,8 +379,37 @@ export default function AnimalVisor({ animal, status, points }: Props) {
           </div>
         )}
 
+        {/* Region locked: requiere comprar el puzzle físico */}
+        {!esProximamente && status !== 'unlocked' && regionLocked && regionInfo && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+            <span style={{
+              background: '#1f2937',
+              color: '#f8fafc',
+              fontSize: '0.78rem',
+              fontWeight: 800,
+              padding: '0.4rem 0.8rem',
+              borderRadius: '8px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              width: 'fit-content',
+            }}>
+              <span aria-hidden>🔐</span>
+              Disponible con el {regionInfo.puzzle}
+            </span>
+            <span style={{
+              fontSize: '0.75rem',
+              color: '#6b7280',
+              fontWeight: 600,
+              lineHeight: 1.5,
+            }}>
+              Escanea el QR del {regionInfo.puzzle} para desbloquear este animal.
+            </span>
+          </div>
+        )}
+
         {/* Locked: costo */}
-        {!esProximamente && status !== 'unlocked' && (
+        {!esProximamente && status !== 'unlocked' && !regionLocked && (
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <span style={{
               background: '#f3f4f6',

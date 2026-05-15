@@ -1,3 +1,5 @@
+export type Region = 'galapagos' | 'andes';
+
 export interface Animal {
   id: string;
   nombre: string;
@@ -20,7 +22,16 @@ export interface Animal {
   accentColor: string;
   especial?: boolean;
   proximamente?: boolean;
+  /** Región del puzzle físico al que pertenece. Omitida para animales
+   *  "proximamente" que aún no se ofrecen en ningún puzzle. */
+  region?: Region;
 }
+
+/** Metadatos por región — usados en copy del bloqueo regional. */
+export const REGIONES: Record<Region, { nombre: string; emoji: string; puzzle: string }> = {
+  galapagos: { nombre: 'Galápagos', emoji: '🏝️', puzzle: 'Puzzle Galápagos' },
+  andes:     { nombre: 'Andes',     emoji: '🏔️', puzzle: 'Puzzle Andes' },
+};
 
 export const animals: Animal[] = [
   {
@@ -40,6 +51,7 @@ export const animals: Animal[] = [
     stats: { peso: '250 kg', longitud: '1.8 m', habitat: 'Galápagos' },
     color: '#d1fae5',
     accentColor: '#059669',
+    region: 'galapagos',
   },
   {
     id: 'iguana-marina',
@@ -57,6 +69,7 @@ export const animals: Animal[] = [
     stats: { peso: '5 kg', longitud: '1.2 m', habitat: 'Galápagos' },
     color: '#f3e8ff',
     accentColor: '#7c3aed',
+    region: 'galapagos',
   },
   {
     id: 'condor-andino',
@@ -75,6 +88,7 @@ export const animals: Animal[] = [
     stats: { peso: '11 kg', longitud: '1.3 m', habitat: 'Andes' },
     color: '#e0f2fe',
     accentColor: '#0284c7',
+    region: 'andes',
   },
   {
     id: 'oso-anteojos',
@@ -93,6 +107,7 @@ export const animals: Animal[] = [
     color: '#fef3c7',
     accentColor: '#d97706',
     especial: true,
+    region: 'andes',
   },
   {
     id: 'lobo-paramo',
